@@ -140,9 +140,11 @@ tr:hover td{background:var(--bg2);}
 .rank.silver{color:#888780;}
 .rank.bronze{color:#993C1D;}
 .student-name{flex:1;font-size:14px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.bar-wrap{width:110px;height:8px;background:var(--bg3);border-radius:99px;overflow:hidden;flex-shrink:0;}
+.bar-wrap{width:90px;height:8px;background:var(--bg3);border-radius:99px;overflow:hidden;flex-shrink:0;}
 .bar-fill{height:100%;background:var(--blue);border-radius:99px;}
-.hour-label{font-size:13px;font-weight:500;width:52px;text-align:right;flex-shrink:0;}
+.hour-stats{display:flex;flex-direction:column;align-items:flex-end;flex-shrink:0;gap:1px;}
+.hour-earned{font-size:13px;font-weight:500;color:var(--text);}
+.hour-balance{font-size:11px;color:var(--text2);}
 
 /* MISC */
 .filter-row{display:flex;gap:8px;margin-bottom:1rem;align-items:center;flex-wrap:wrap;}
@@ -171,7 +173,8 @@ tr:hover td{background:var(--bg2);}
 @media(max-width:480px){
   .app{padding:1rem 0.75rem 3rem;}
   .metric-value{font-size:20px;}
-  .bar-wrap{width:70px;}
+  .bar-wrap{width:55px;}
+  .hour-balance{display:none;}
   .pin-box{padding:1.5rem 1.25rem 1.25rem;}
 }
 </style>
@@ -701,29 +704,39 @@ function setSortMode(mode) {
 }
 
 function renderLeaderboard() {
+  // Build earned map (gross hours worked, ignoring spending)
+  const earnedMap = {};
   const balMap = {};
-  allNames.forEach(n=>{ balMap[n]=0; });
+  allNames.forEach(n=>{ earnedMap[n]=0; balMap[n]=0; });
   allEntries.forEach(e=>{
-    if (e.status!=="pending"&&e.status!=="denied") balMap[e.name]=(balMap[e.name]||0)+e.hours;
+    if (e.status==="pending"||e.status==="denied") return;
+    if (e.hours>0) earnedMap[e.name]=(earnedMap[e.name]||0)+e.hours;
+    balMap[e.name]=(balMap[e.name]||0)+e.hours;
   });
-  let sorted = Object.entries(balMap);
+
+  // Sort: always by earned for ranking; name toggle for alpha
+  let sorted = Object.entries(earnedMap);
   if (sortMode==="hours") sorted.sort((a,b)=>b[1]-a[1]);
   else sorted.sort((a,b)=>a[0].localeCompare(b[0]));
 
-  const maxH = sorted.reduce((m,[,h])=>Math.max(m,h),0)||1;
+  const maxEarned = sorted.reduce((m,[,h])=>Math.max(m,h),0)||1;
   const rankColors=["gold","silver","bronze"];
   const list=document.getElementById("leaderboard-list");
   if (sorted.length===0){list.innerHTML=`<div class="empty">No data yet.</div>`;return;}
 
-  list.innerHTML=sorted.map(([name,hrs],i)=>{
-    const pct=Math.round((Math.max(hrs,0)/maxH)*100);
+  list.innerHTML=sorted.map(([name,earned],i)=>{
+    const bal = balMap[name]||0;
+    const pct=Math.round((earned/maxEarned)*100);
     const rc=sortMode==="hours"&&i<3?rankColors[i]:"";
     return `<div class="leaderboard-row">
       <span class="rank ${rc}">${i+1}</span>
       <div class="avatar" aria-hidden="true">${initials(name)}</div>
       <span class="student-name">${name}</span>
       <div class="bar-wrap" aria-hidden="true"><div class="bar-fill" style="width:${pct}%"></div></div>
-      <span class="hour-label">${hrs.toFixed(1)} hrs</span>
+      <div class="hour-stats">
+        <span class="hour-earned">${earned.toFixed(1)} earned</span>
+        <span class="hour-balance">${bal.toFixed(1)} balance</span>
+      </div>
     </div>`;
   }).join("");
 
@@ -731,13 +744,13 @@ function renderLeaderboard() {
   const barH=Math.max(sorted.length*38+60,160);
   wrap.style.height=barH+"px";
   const canvas=document.getElementById("board-chart");
-  canvas.setAttribute("aria-label","Hours by team member: "+sorted.map(([n,h])=>n+" "+h.toFixed(1)).join(", "));
+  canvas.setAttribute("aria-label","Hours earned by team member: "+sorted.map(([n,h])=>n+" "+h.toFixed(1)).join(", "));
   if (boardChart) boardChart.destroy();
   boardChart=new Chart(canvas,{
     type:"bar",
     data:{
       labels:sorted.map(([n])=>n.split(" ")[0]),
-      datasets:[{label:"Net hours",data:sorted.map(([,h])=>parseFloat(Math.max(h,0).toFixed(1))),backgroundColor:"#B5D4F4",borderColor:"#185FA5",borderWidth:1}]
+      datasets:[{label:"Hours earned",data:sorted.map(([,h])=>parseFloat(h.toFixed(1))),backgroundColor:"#B5D4F4",borderColor:"#185FA5",borderWidth:1}]
     },
     options:{
       responsive:true,maintainAspectRatio:false,
