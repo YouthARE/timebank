@@ -3,850 +3,589 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Project Timebank</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<title>YouthARE Timebank</title>
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-:root {
-  --bg:#ffffff; --bg2:#f5f5f3; --bg3:#ebebea;
-  --text:#1a1a19; --text2:#6b6b68; --text3:#9a9a97;
-  --border:rgba(0,0,0,0.12); --border2:rgba(0,0,0,0.22);
-  --radius:8px; --radius-lg:12px;
-  --blue:#185FA5; --blue-l:#E6F1FB; --blue-d:#0C447C;
-  --teal:#0F6E56; --teal-l:#E1F5EE;
-  --amber:#BA7517; --amber-l:#FAEEDA;
-  --red:#A32D2D; --red-l:#FCEBEB;
-  --orange:#993C1D; --orange-l:#FAECE7;
-  --green:#3B6D11; --green-l:#EAF3DE;
-  --purple:#534AB7; --purple-l:#EEEDFE;
-}
-@media(prefers-color-scheme:dark){
-  :root{
-    --bg:#1c1c1a; --bg2:#252523; --bg3:#2e2e2b;
-    --text:#f0f0ee; --text2:#a0a09d; --text3:#6b6b68;
-    --border:rgba(255,255,255,0.12); --border2:rgba(255,255,255,0.22);
-    --blue:#5ca0d8; --blue-l:#0c2e4a; --blue-d:#85b7eb;
-    --teal:#3dcca0; --teal-l:#052e22;
-    --amber:#f5b942; --amber-l:#2e1e04;
-    --red:#f07070; --red-l:#2e0f0f;
-    --orange:#f09c7a; --orange-l:#2e1208;
-    --green:#7fc444; --green-l:#162604;
-    --purple:#a09ae8; --purple-l:#1a1840;
+  :root {
+    --teal: #0d9488;
+    --teal-dark: #0f766e;
+    --red: #dc2626;
+    --gold: #d97706;
+    --bg: #f0fdf9;
+    --card: #ffffff;
+    --border: #ccfbf1;
+    --text: #134e4a;
+    --muted: #6b7280;
+    --shadow: 0 2px 8px rgba(13,148,136,0.10);
   }
-}
-html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:16px;line-height:1.6;}
-.app{max-width:720px;margin:0 auto;padding:1.5rem 1rem 3rem;}
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  header { background: var(--teal); color: #fff; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; }
+  header h1 { font-size: 1.25rem; font-weight: 700; letter-spacing: 0.02em; }
+  header .subtitle { font-size: 0.78rem; opacity: 0.85; }
+  #signout-btn { background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.4); color: #fff; border-radius: 6px; padding: 5px 12px; font-size: 0.82rem; cursor: pointer; display: none; }
+  #signout-btn:hover { background: rgba(255,255,255,0.28); }
 
-/* PIN SCREEN */
-.pin-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);}
-.pin-box{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:2rem 2rem 1.5rem;width:100%;max-width:340px;text-align:center;}
-.pin-icon{font-size:32px;color:var(--blue);margin-bottom:0.75rem;}
-.pin-title{font-size:17px;font-weight:500;margin-bottom:0.25rem;}
-.pin-sub{font-size:13px;color:var(--text2);margin-bottom:1.25rem;}
-.pin-dots{display:flex;justify-content:center;gap:10px;margin-bottom:1.25rem;}
-.pin-dot{width:14px;height:14px;border-radius:50%;border:1.5px solid var(--border2);background:transparent;transition:background 0.15s;}
-.pin-dot.filled{background:var(--blue);border-color:var(--blue);}
-.pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1rem;}
-.pin-key{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);padding:14px;font-size:18px;font-weight:500;cursor:pointer;color:var(--text);transition:all 0.1s;font-family:inherit;}
-.pin-key:hover{background:var(--bg3);}
-.pin-key:active{transform:scale(0.95);}
-.pin-key.wide{grid-column:span 2;}
-.pin-key.del{font-size:14px;}
-.pin-error{font-size:13px;color:var(--red);min-height:20px;margin-top:0.25rem;}
+  /* PIN SCREEN */
+  #pin-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80vh; gap: 18px; padding: 24px; }
+  .pin-card { background: var(--card); border-radius: 14px; box-shadow: var(--shadow); padding: 32px 28px; width: 100%; max-width: 340px; text-align: center; }
+  .pin-card h2 { font-size: 1.2rem; color: var(--teal); margin-bottom: 6px; }
+  .pin-card p { font-size: 0.85rem; color: var(--muted); margin-bottom: 18px; }
+  .pin-input { width: 100%; border: 2px solid var(--border); border-radius: 8px; padding: 11px 14px; font-size: 1.1rem; text-align: center; letter-spacing: 0.2em; color: var(--text); outline: none; transition: border 0.2s; }
+  .pin-input:focus { border-color: var(--teal); }
+  .pin-btn { margin-top: 12px; width: 100%; background: var(--teal); color: #fff; border: none; border-radius: 8px; padding: 11px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+  .pin-btn:hover { background: var(--teal-dark); }
+  .pin-error { color: var(--red); font-size: 0.85rem; margin-top: 8px; min-height: 18px; }
 
-/* HEADER */
-.app-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:12px;}
-.app-title{display:flex;align-items:center;gap:10px;font-size:20px;font-weight:500;}
-.app-title i{font-size:22px;color:var(--blue);}
-.header-right{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
-.program-selector{display:flex;align-items:center;gap:8px;}
-.program-selector label{font-size:13px;color:var(--text2);}
-.program-selector select{font-size:14px;padding:6px 10px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);cursor:pointer;}
-.signout-btn{font-size:12px;color:var(--text3);background:none;border:0.5px solid var(--border);border-radius:var(--radius);padding:4px 10px;cursor:pointer;font-family:inherit;}
-.signout-btn:hover{color:var(--text2);border-color:var(--border2);}
+  /* PROGRAM SELECTOR */
+  #program-bar { background: #fff; border-bottom: 2px solid var(--border); padding: 10px 12px; display: none; }
+  #program-bar label { font-size: 0.82rem; font-weight: 600; color: var(--teal); margin-right: 8px; }
+  #program-select { border: 1.5px solid var(--teal); border-radius: 7px; padding: 6px 10px; font-size: 0.9rem; color: var(--text); background: #fff; cursor: pointer; }
 
-/* TABS */
-.tab-bar{display:flex;gap:2px;border-bottom:0.5px solid var(--border);margin-bottom:1.5rem;overflow-x:auto;}
-.tab{padding:9px 16px;font-size:14px;cursor:pointer;border:none;background:transparent;color:var(--text2);border-bottom:2px solid transparent;margin-bottom:-0.5px;white-space:nowrap;border-radius:0;font-family:inherit;}
-.tab.active{color:var(--text);border-bottom:2px solid var(--blue);font-weight:500;}
-.tab:hover:not(.active){color:var(--text);background:var(--bg2);}
-.tab.admin-tab{color:var(--purple);}
-.tab.admin-tab.active{border-bottom-color:var(--purple);}
+  /* MAIN NAV TABS */
+  #main-nav { background: #fff; border-bottom: 2px solid var(--border); display: none; overflow-x: auto; white-space: nowrap; }
+  .nav-tab { display: inline-block; padding: 11px 18px; font-size: 0.88rem; font-weight: 600; color: var(--muted); cursor: pointer; border-bottom: 3px solid transparent; transition: color 0.2s, border-color 0.2s; }
+  .nav-tab.active { color: var(--teal); border-bottom-color: var(--teal); }
+  .nav-tab:hover:not(.active) { color: var(--text); }
 
-/* LAYOUT */
-.section-title{font-size:17px;font-weight:500;margin-bottom:1rem;}
-.card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:1rem 1.25rem;margin-bottom:1rem;}
-.metric-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:1.5rem;}
-.metric{background:var(--bg2);border-radius:var(--radius);padding:1rem;}
-.metric-label{font-size:12px;color:var(--text2);margin-bottom:4px;}
-.metric-value{font-size:24px;font-weight:500;}
-.metric-value.blue{color:var(--blue);}
-.metric-value.teal{color:var(--teal);}
-.metric-value.amber{color:var(--amber);}
-.metric-value.purple{color:var(--purple);}
+  /* CONTENT AREA */
+  #app-content { display: none; padding: 16px; max-width: 700px; margin: 0 auto; }
 
-/* FORMS */
-.form-group{margin-bottom:1rem;}
-.form-label{display:block;font-size:13px;color:var(--text2);margin-bottom:5px;}
-input[type=text],input[type=number],input[type=date],select,textarea{
-  width:100%;padding:8px 10px;font-size:14px;font-family:inherit;
-  border:0.5px solid var(--border2);border-radius:var(--radius);
-  background:var(--bg);color:var(--text);outline:none;transition:border-color 0.15s;
-}
-input:focus,select:focus,textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(24,95,165,0.15);}
-textarea{resize:vertical;line-height:1.5;}
-.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 20px;font-size:14px;border-radius:var(--radius);cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;border:none;}
-.btn-primary{background:var(--blue);color:white;}
-.btn-primary:hover{background:var(--blue-d);}
-.btn-primary:active{transform:scale(0.98);}
-.btn-primary:disabled{opacity:0.6;cursor:not-allowed;}
-.btn-sm{padding:5px 12px;font-size:12px;}
-.btn-approve{background:var(--teal);color:white;}
-.btn-approve:hover{opacity:0.88;}
-.btn-deny{background:var(--red);color:white;}
-.btn-deny:hover{opacity:0.88;}
+  /* CARDS */
+  .card { background: var(--card); border-radius: 12px; box-shadow: var(--shadow); padding: 20px; margin-bottom: 16px; }
+  .card h3 { font-size: 1rem; font-weight: 700; color: var(--teal); margin-bottom: 14px; }
+  .form-group { margin-bottom: 13px; }
+  .form-group label { display: block; font-size: 0.82rem; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .form-group select, .form-group input, .form-group textarea {
+    width: 100%; border: 1.5px solid #d1fae5; border-radius: 7px; padding: 9px 12px; font-size: 0.92rem; color: var(--text); background: #fff; outline: none; transition: border 0.2s;
+  }
+  .form-group select:focus, .form-group input:focus, .form-group textarea:focus { border-color: var(--teal); }
+  .form-group textarea { resize: vertical; min-height: 70px; }
+  .submit-btn { background: var(--teal); color: #fff; border: none; border-radius: 8px; padding: 11px 22px; font-size: 0.95rem; font-weight: 700; cursor: pointer; width: 100%; margin-top: 4px; transition: background 0.2s; }
+  .submit-btn:hover { background: var(--teal-dark); }
+  .submit-msg { text-align: center; font-size: 0.88rem; color: var(--teal); margin-top: 8px; min-height: 20px; font-weight: 600; }
 
-/* BANNERS */
-.banner{border-radius:var(--radius);padding:10px 14px;font-size:14px;margin-bottom:1rem;display:flex;align-items:flex-start;gap:8px;}
-.banner-success{background:var(--teal-l);color:var(--teal);border:0.5px solid var(--teal);}
-.banner-error{background:var(--red-l);color:var(--red);border:0.5px solid var(--red);}
-.banner-info{background:var(--blue-l);color:var(--blue-d);border:0.5px solid var(--blue);}
-.banner-warning{background:var(--amber-l);color:var(--amber);border:0.5px solid var(--amber);}
+  /* STATS ROW */
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
+  .stat-box { background: var(--card); border-radius: 10px; box-shadow: var(--shadow); padding: 13px 8px; text-align: center; }
+  .stat-box .val { font-size: 1.5rem; font-weight: 800; color: var(--teal); }
+  .stat-box .lbl { font-size: 0.7rem; color: var(--muted); margin-top: 2px; font-weight: 600; text-transform: uppercase; }
 
-/* TABLES */
-table{width:100%;font-size:13px;border-collapse:collapse;}
-th{text-align:left;font-size:12px;font-weight:500;color:var(--text2);padding:6px 8px;border-bottom:0.5px solid var(--border);}
-td{padding:8px 8px;border-bottom:0.5px solid var(--border);color:var(--text);vertical-align:middle;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-tr:last-child td{border-bottom:none;}
-tr:hover td{background:var(--bg2);}
+  /* TABLE */
+  .tbl-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+  th { background: #f0fdf9; color: var(--teal); font-weight: 700; text-align: left; padding: 8px 10px; border-bottom: 2px solid var(--border); }
+  td { padding: 8px 10px; border-bottom: 1px solid #f0fdf4; vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #f0fdf9; }
 
-/* BADGES */
-.badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:99px;font-weight:500;}
-.badge-work{background:var(--blue-l);color:var(--blue-d);}
-.badge-request{background:var(--amber-l);color:var(--amber);}
-.badge-approved{background:var(--green-l);color:var(--green);}
-.badge-pending{background:var(--orange-l);color:var(--orange);}
-.badge-denied{background:var(--red-l);color:var(--red);}
+  /* BADGES */
+  .badge { display: inline-block; border-radius: 5px; padding: 2px 8px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+  .badge-approved { background: #d1fae5; color: #065f46; }
+  .badge-pending  { background: #fef3c7; color: #92400e; }
+  .badge-denied   { background: #fee2e2; color: #991b1b; }
+  .badge-work     { background: #e0f2fe; color: #0369a1; }
+  .badge-request  { background: #fce7f3; color: #9d174d; }
 
-/* AVATAR */
-.avatar{width:28px;height:28px;border-radius:50%;background:var(--blue-l);display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;color:var(--blue-d);flex-shrink:0;}
+  /* LEADERBOARD */
+  .lb-row { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 9px; margin-bottom: 8px; background: var(--bg); }
+  .lb-rank { font-size: 1.1rem; font-weight: 800; color: var(--teal); min-width: 28px; }
+  .lb-rank.gold   { color: #d97706; }
+  .lb-rank.silver { color: #6b7280; }
+  .lb-rank.bronze { color: #b45309; }
+  .lb-name { flex: 1; font-weight: 600; font-size: 0.95rem; }
+  .lb-hrs  { font-size: 1rem; font-weight: 800; color: var(--teal); }
+  .lb-bal  { font-size: 0.78rem; color: var(--muted); margin-left: 4px; }
 
-/* LEADERBOARD */
-.leaderboard-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:0.5px solid var(--border);}
-.leaderboard-row:last-child{border-bottom:none;}
-.rank{font-size:13px;font-weight:500;color:var(--text2);width:22px;flex-shrink:0;}
-.rank.gold{color:#BA7517;}
-.rank.silver{color:#888780;}
-.rank.bronze{color:#993C1D;}
-.student-name{flex:1;font-size:14px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.bar-wrap{width:90px;height:8px;background:var(--bg3);border-radius:99px;overflow:hidden;flex-shrink:0;}
-.bar-fill{height:100%;background:var(--blue);border-radius:99px;}
-.hour-stats{display:flex;flex-direction:column;align-items:flex-end;flex-shrink:0;gap:1px;}
-.hour-earned{font-size:13px;font-weight:500;color:var(--text);}
-.hour-balance{font-size:11px;color:var(--text2);}
+  /* ADMIN */
+  .admin-section { margin-bottom: 20px; }
+  .admin-section h4 { font-size: 0.9rem; font-weight: 700; color: var(--teal); margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+  .pending-card { background: #fffbeb; border: 1px solid #fde68a; border-radius: 9px; padding: 13px 15px; margin-bottom: 10px; }
+  .pending-card .pname { font-weight: 700; font-size: 0.95rem; }
+  .pending-card .pdetail { font-size: 0.83rem; color: var(--muted); margin: 4px 0 10px; }
+  .pcard-actions { display: flex; gap: 8px; }
+  .btn-approve { background: #10b981; color: #fff; border: none; border-radius: 6px; padding: 6px 15px; font-size: 0.82rem; font-weight: 700; cursor: pointer; }
+  .btn-approve:hover { background: #059669; }
+  .btn-deny { background: #ef4444; color: #fff; border: none; border-radius: 6px; padding: 6px 15px; font-size: 0.82rem; font-weight: 700; cursor: pointer; }
+  .btn-deny:hover { background: #dc2626; }
+  .empty-note { text-align: center; color: var(--muted); font-size: 0.87rem; padding: 18px 0; }
 
-/* MISC */
-.filter-row{display:flex;gap:8px;margin-bottom:1rem;align-items:center;flex-wrap:wrap;}
-.filter-row label{font-size:13px;color:var(--text2);white-space:nowrap;}
-.filter-row select{flex:1;min-width:160px;}
-.empty{color:var(--text3);font-size:14px;text-align:center;padding:2.5rem 1rem;}
-.spinner{width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin 0.7s linear infinite;flex-shrink:0;}
-@keyframes spin{to{transform:rotate(360deg);}}
-.refresh-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;}
-.refresh-btn{display:inline-flex;align-items:center;gap:5px;font-size:13px;color:var(--text2);background:none;border:0.5px solid var(--border);border-radius:var(--radius);padding:4px 10px;cursor:pointer;font-family:inherit;}
-.refresh-btn:hover{color:var(--text);border-color:var(--border2);}
-.toggle-row{display:flex;gap:8px;margin-bottom:1rem;}
-.toggle-btn{padding:5px 14px;font-size:13px;border-radius:99px;border:0.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;font-family:inherit;}
-.toggle-btn.active{background:var(--blue);color:white;border-color:var(--blue);}
-.last-updated{font-size:12px;color:var(--text3);}
-.pending-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:2px 8px;border-radius:99px;background:var(--orange-l);color:var(--orange);font-weight:500;}
-.section-divider{font-size:13px;font-weight:500;color:var(--text2);margin:1.25rem 0 0.75rem;padding-bottom:6px;border-bottom:0.5px solid var(--border);}
-.approval-card{background:var(--bg);border:0.5px solid var(--amber);border-radius:var(--radius-lg);padding:1rem 1.25rem;margin-bottom:0.75rem;}
-.approval-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;}
-.approval-info{flex:1;min-width:0;}
-.approval-name{font-size:14px;font-weight:500;}
-.approval-detail{font-size:13px;color:var(--text2);margin-top:2px;}
-.approval-meta{font-size:12px;color:var(--text3);margin-top:2px;}
-.approval-actions{display:flex;gap:6px;flex-shrink:0;align-items:center;}
-.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
-@media(max-width:480px){
-  .app{padding:1rem 0.75rem 3rem;}
-  .metric-value{font-size:20px;}
-  .bar-wrap{width:55px;}
-  .hour-balance{display:none;}
-  .pin-box{padding:1.5rem 1.25rem 1.25rem;}
-}
+  /* TYPE TOGGLE */
+  .type-toggle { display: flex; gap: 8px; margin-bottom: 14px; }
+  .type-btn { flex: 1; padding: 9px; border-radius: 8px; border: 2px solid var(--border); background: #fff; font-weight: 700; font-size: 0.88rem; cursor: pointer; transition: all 0.2s; color: var(--muted); }
+  .type-btn.active { border-color: var(--teal); background: var(--teal); color: #fff; }
+
+  /* LOADER */
+  .loader { text-align: center; color: var(--muted); font-size: 0.87rem; padding: 20px; }
+
+  @media (max-width: 480px) {
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .nav-tab { padding: 10px 12px; font-size: 0.82rem; }
+  }
 </style>
 </head>
 <body>
 
+<header>
+  <div>
+    <div class="subtitle">YouthARE</div>
+    <h1>⏱ Timebank</h1>
+  </div>
+  <button id="signout-btn" onclick="signOut()">Sign Out</button>
+</header>
+
 <!-- PIN SCREEN -->
-<div id="pin-screen" class="pin-screen">
-  <div class="pin-box">
-    <div class="pin-icon"><i class="ti ti-lock" aria-hidden="true"></i></div>
-    <div class="pin-title">Project Timebank</div>
-    <div class="pin-sub" id="pin-sub">Enter your PIN to continue</div>
-    <div class="pin-dots" id="pin-dots" aria-hidden="true">
-      <div class="pin-dot" id="d0"></div>
-      <div class="pin-dot" id="d1"></div>
-      <div class="pin-dot" id="d2"></div>
-      <div class="pin-dot" id="d3"></div>
-    </div>
-    <div class="pin-pad" role="group" aria-label="PIN keypad">
-      <button class="pin-key" onclick="pinKey('1')" aria-label="1">1</button>
-      <button class="pin-key" onclick="pinKey('2')" aria-label="2">2</button>
-      <button class="pin-key" onclick="pinKey('3')" aria-label="3">3</button>
-      <button class="pin-key" onclick="pinKey('4')" aria-label="4">4</button>
-      <button class="pin-key" onclick="pinKey('5')" aria-label="5">5</button>
-      <button class="pin-key" onclick="pinKey('6')" aria-label="6">6</button>
-      <button class="pin-key" onclick="pinKey('7')" aria-label="7">7</button>
-      <button class="pin-key" onclick="pinKey('8')" aria-label="8">8</button>
-      <button class="pin-key" onclick="pinKey('9')" aria-label="9">9</button>
-      <button class="pin-key" onclick="pinKey('0')" aria-label="0">0</button>
-      <button class="pin-key del" onclick="pinDel()" aria-label="Delete"><i class="ti ti-backspace" aria-hidden="true"></i></button>
-    </div>
-    <div class="pin-error" id="pin-error" role="alert"></div>
+<div id="pin-screen">
+  <div class="pin-card">
+    <h2>Welcome</h2>
+    <p>Enter your PIN to continue</p>
+    <select id="pin-program-select" class="pin-input" style="letter-spacing:normal; margin-bottom:12px;">
+      <option value="">— Select your program —</option>
+      <option value="JLS">JLS</option>
+      <option value="KYTI">KYTI</option>
+      <option value="Kenya">Kenya</option>
+      <option value="CAYEO">CAYEO</option>
+      <option value="Moshi">Moshi</option>
+      <option value="BPS7">BPS7</option>
+      <option value="BPS6">BPS6</option>
+      <option value="BPS5">BPS5</option>
+      <option value="BPS4">BPS4</option>
+      <option value="BPS3">BPS3</option>
+    </select>
+    <input type="password" id="pin-input" class="pin-input" placeholder="Enter PIN" maxlength="8" inputmode="numeric" />
+    <div class="pin-error" id="pin-error"></div>
+    <button class="pin-btn" onclick="checkPin()">Enter</button>
   </div>
 </div>
 
-<!-- MAIN APP -->
-<div id="main-app" style="display:none;">
-<div class="app" role="main">
-  <h1 class="sr-only">Project Timebank</h1>
+<!-- PROGRAM BAR (admin only) -->
+<div id="program-bar">
+  <label for="program-select">Program:</label>
+  <select id="program-select" onchange="onProgramChange()">
+    <option value="JLS">JLS</option>
+    <option value="KYTI">KYTI</option>
+    <option value="Kenya">Kenya</option>
+    <option value="CAYEO">CAYEO</option>
+    <option value="Moshi">Moshi</option>
+    <option value="BPS7">BPS7</option>
+    <option value="BPS6">BPS6</option>
+    <option value="BPS5">BPS5</option>
+    <option value="BPS4">BPS4</option>
+    <option value="BPS3">BPS3</option>
+  </select>
+</div>
 
-  <div class="app-header">
-    <div class="app-title">
-      <i class="ti ti-clock-bolt" aria-hidden="true"></i>
-      Project Timebank
-    </div>
-    <div class="header-right">
-      <div class="program-selector">
-        <label for="program-select">Program:</label>
-        <select id="program-select" onchange="onProgramChange()">
-          <option value="JLS">JLS</option>
-          <option value="KYTI">KYTI</option>
-          <option value="Kenya">Kenya</option>
-          <option value="CAYEO">CAYEO</option>
-          <option value="Moshi">Moshi</option>
-        </select>
-      </div>
-      <button class="signout-btn" onclick="signOut()"><i class="ti ti-logout" style="font-size:13px;" aria-hidden="true"></i> Sign out</button>
-    </div>
-  </div>
+<!-- MAIN NAV -->
+<div id="main-nav">
+  <span class="nav-tab active" onclick="showTab('give-get')">Give &amp; Get</span>
+  <span class="nav-tab" onclick="showTab('my-history')">My Hours</span>
+  <span class="nav-tab" onclick="showTab('leaderboard')">Leaderboard</span>
+  <span class="nav-tab admin-only" onclick="showTab('admin')" style="display:none">Admin</span>
+</div>
 
-  <div class="tab-bar" role="tablist">
-    <button class="tab active" onclick="showTab('give')" id="tab-btn-give" role="tab">Give &amp; Get</button>
-    <button class="tab" onclick="showTab('my')" id="tab-btn-my" role="tab">My history</button>
-    <button class="tab" onclick="showTab('board')" id="tab-btn-board" role="tab">Leaderboard</button>
-    <button class="tab admin-tab" onclick="showTab('admin')" id="tab-btn-admin" role="tab" style="display:none;">
-      <i class="ti ti-shield" style="font-size:13px;margin-right:4px;" aria-hidden="true"></i>Admin
-    </button>
-  </div>
+<!-- APP CONTENT -->
+<div id="app-content">
 
-  <!-- GIVE & GET -->
-  <div id="tab-give">
-    <p class="section-title">Log work hours or request an item</p>
-    <div id="give-banner" style="display:none;"></div>
+  <!-- GIVE & GET TAB -->
+  <div id="tab-give-get">
     <div class="card">
-      <div class="form-group">
-        <label class="form-label" for="f-name">Your name</label>
-        <select id="f-name" onchange="onNameChange()">
-          <option value="">— Select your name —</option>
-        </select>
+      <h3>Log Activity</h3>
+      <div class="type-toggle">
+        <button class="type-btn active" id="btn-work" onclick="setType('Work')">🛠 Log Work Hours</button>
+        <button class="type-btn" id="btn-request" onclick="setType('Request')">🎁 Request Item</button>
       </div>
       <div class="form-group">
-        <label class="form-label" for="f-type">Entry type</label>
-        <select id="f-type" onchange="toggleFields()">
-          <option value="work">Log work hours</option>
-          <option value="request">Request an item</option>
+        <label>Your Name</label>
+        <select id="member-name">
+          <option value="">Loading names…</option>
         </select>
       </div>
       <div id="work-fields">
         <div class="form-group">
-          <label class="form-label" for="f-date">Date of work</label>
-          <input id="f-date" type="date" />
+          <label>Hours Worked</label>
+          <select id="hours-worked">
+            <option value="0.5">0.5 hrs</option>
+            <option value="1">1 hr</option>
+            <option value="1.5">1.5 hrs</option>
+            <option value="2">2 hrs</option>
+            <option value="2.5">2.5 hrs</option>
+            <option value="3">3 hrs</option>
+            <option value="3.5">3.5 hrs</option>
+            <option value="4">4 hrs</option>
+            <option value="4.5">4.5 hrs</option>
+            <option value="5">5 hrs</option>
+          </select>
         </div>
         <div class="form-group">
-          <label class="form-label" for="f-hours">Hours worked</label>
-          <input id="f-hours" type="number" min="0.5" max="12" step="0.5" placeholder="e.g. 2" />
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="f-desc">What did you work on?</label>
-          <textarea id="f-desc" rows="2" placeholder="Brief description of your work…"></textarea>
+          <label>Activity Description</label>
+          <textarea id="work-detail" placeholder="What did you work on?"></textarea>
         </div>
       </div>
-      <div id="request-fields" style="display:none;">
-        <div id="balance-preview" style="display:none;margin-bottom:1rem;"></div>
+      <div id="request-fields" style="display:none">
         <div class="form-group">
-          <label class="form-label" for="f-item">Item you want</label>
-          <input id="f-item" type="text" placeholder="e.g. Gift card, Book, Supply kit…" />
+          <label>Item / Resource Requested</label>
+          <input type="text" id="request-item" placeholder="What are you requesting?" />
         </div>
         <div class="form-group">
-          <label class="form-label" for="f-cost">Hour cost of item</label>
-          <input id="f-cost" type="number" min="0.5" step="0.5" placeholder="Hours to spend" />
+          <label>Hours to Spend</label>
+          <select id="hours-request">
+            <option value="1">1 hr</option>
+            <option value="2">2 hrs</option>
+            <option value="3">3 hrs</option>
+            <option value="4">4 hrs</option>
+            <option value="5">5 hrs</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Notes (optional)</label>
+          <textarea id="request-notes" placeholder="Any details about your request?"></textarea>
         </div>
       </div>
-      <button class="btn btn-primary" id="submit-btn" onclick="submitEntry()">
-        <i class="ti ti-send" aria-hidden="true"></i> Submit
-      </button>
+      <button class="submit-btn" onclick="submitEntry()">Submit</button>
+      <div class="submit-msg" id="submit-msg"></div>
     </div>
   </div>
 
-  <!-- MY HISTORY -->
-  <div id="tab-my" style="display:none;">
-    <div class="refresh-row">
-      <p class="section-title" style="margin:0;">My history</p>
-      <button class="refresh-btn" onclick="loadData(true)"><i class="ti ti-refresh" aria-hidden="true"></i> Refresh</button>
-    </div>
-    <div class="filter-row">
-      <label for="my-filter">Your name:</label>
-      <select id="my-filter" onchange="renderMyHistory()">
-        <option value="">— Select your name —</option>
+  <!-- MY HISTORY TAB -->
+  <div id="tab-my-history" style="display:none">
+    <div class="form-group" style="margin-bottom:14px;">
+      <label style="font-size:0.82rem;font-weight:600;color:var(--teal);">View member:</label>
+      <select id="history-name" onchange="loadHistory()">
+        <option value="">— Select name —</option>
       </select>
     </div>
-    <div id="my-metrics" class="metric-row" style="display:none;"></div>
-    <div class="card" id="my-table-wrap">
-      <div class="empty">Select your name above to see your history.</div>
+    <div class="stats-row" id="history-stats" style="display:none">
+      <div class="stat-box"><div class="val" id="stat-earned">0</div><div class="lbl">Earned</div></div>
+      <div class="stat-box"><div class="val" id="stat-spent">0</div><div class="lbl">Spent</div></div>
+      <div class="stat-box"><div class="val" id="stat-balance">0</div><div class="lbl">Balance</div></div>
+      <div class="stat-box"><div class="val" id="stat-pending">0</div><div class="lbl">Pending</div></div>
     </div>
-  </div>
-
-  <!-- LEADERBOARD -->
-  <div id="tab-board" style="display:none;">
-    <div class="refresh-row">
-      <p class="section-title" style="margin:0;">Leaderboard</p>
-      <button class="refresh-btn" onclick="loadData(true)"><i class="ti ti-refresh" aria-hidden="true"></i> Refresh</button>
-    </div>
-    <div class="toggle-row">
-      <button class="toggle-btn active" id="sort-hrs" onclick="setSortMode('hours')">By hours</button>
-      <button class="toggle-btn" id="sort-name" onclick="setSortMode('name')">By name</button>
-    </div>
-    <div class="card" id="leaderboard-list"><div class="empty">Loading…</div></div>
-    <div style="margin-top:1rem;position:relative;width:100%;" id="chart-wrap">
-      <canvas id="board-chart" role="img" aria-label="Bar chart of total hours earned by each team member"></canvas>
-    </div>
-  </div>
-
-  <!-- ADMIN -->
-  <div id="tab-admin" style="display:none;">
-    <div class="refresh-row">
-      <p class="section-title" style="margin:0;"><i class="ti ti-shield" style="font-size:15px;color:var(--purple);margin-right:5px;" aria-hidden="true"></i>Admin view</p>
-      <div style="display:flex;align-items:center;gap:10px;">
-        <span class="last-updated" id="last-updated"></span>
-        <button class="refresh-btn" onclick="loadData(true)"><i class="ti ti-refresh" aria-hidden="true"></i> Refresh</button>
+    <div class="card" id="history-table-card" style="display:none">
+      <h3>Activity History</h3>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Date</th><th>Type</th><th>Detail</th><th>Hrs</th><th>Status</th></tr></thead>
+          <tbody id="history-tbody"></tbody>
+        </table>
       </div>
     </div>
+    <div class="loader" id="history-loader" style="display:none">Loading…</div>
+  </div>
 
-    <div class="metric-row" id="admin-metrics"></div>
-
-    <div id="pending-section">
-      <div class="section-divider"><i class="ti ti-clock" style="font-size:13px;margin-right:4px;" aria-hidden="true"></i>Pending approvals</div>
-      <div id="pending-list"></div>
-    </div>
-
-    <div class="section-divider"><i class="ti ti-list" style="font-size:13px;margin-right:4px;" aria-hidden="true"></i>All activity</div>
-    <div class="filter-row">
-      <label for="admin-filter">Filter:</label>
-      <select id="admin-filter" onchange="renderAdmin()">
-        <option value="">All team members</option>
-      </select>
-    </div>
-    <div class="card" style="overflow-x:auto;">
-      <table style="table-layout:fixed;">
-        <colgroup>
-          <col style="width:88px;">
-          <col style="width:110px;">
-          <col style="width:68px;">
-          <col>
-          <col style="width:48px;">
-          <col style="width:72px;">
-        </colgroup>
-        <thead><tr><th>Date</th><th>Member</th><th>Type</th><th>Detail</th><th>Hrs</th><th>Status</th></tr></thead>
-        <tbody id="admin-tbody"><tr><td colspan="6"><div class="empty">Loading…</div></td></tr></tbody>
-      </table>
+  <!-- LEADERBOARD TAB -->
+  <div id="tab-leaderboard" style="display:none">
+    <div class="card">
+      <h3>🏆 Leaderboard — Total Hours Earned</h3>
+      <div id="lb-list"><div class="loader">Loading…</div></div>
     </div>
   </div>
 
-</div>
-</div>
+  <!-- ADMIN TAB -->
+  <div id="tab-admin" style="display:none">
+    <div class="card">
+      <div class="admin-section">
+        <h4>⏳ Pending Requests</h4>
+        <div id="admin-pending"><div class="loader">Loading…</div></div>
+      </div>
+      <div class="admin-section">
+        <h4>📋 All Activity</h4>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Date</th><th>Name</th><th>Type</th><th>Detail</th><th>Hrs</th><th>Status</th></tr></thead>
+            <tbody id="admin-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end app-content -->
 
 <script>
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyhW3YgT-vcmZli3XdNUV_Tei_CLz7nF1knOEXatYM_0NQXXS8BOlX9wB4QaU3Ermnmnw/exec";
-const PIN_MEMBER = "1249";
-const PIN_ADMIN  = "9128";
+const MEMBER_PIN = "1249";
+const ADMIN_PIN  = "9128";
 
-let currentPin = "";
 let isAdmin = false;
+let currentProgram = "";
+let currentUser = "";
 let allEntries = [];
-let allNames = [];
-let sortMode = "hours";
-let boardChart = null;
-let loading = false;
+let entryType = "Work";
 
-// ── PIN ──────────────────────────────────────────────
-function pinKey(k) {
-  if (currentPin.length >= 4) return;
-  currentPin += k;
-  updateDots();
-  if (currentPin.length === 4) setTimeout(checkPin, 120);
-}
-function pinDel() {
-  currentPin = currentPin.slice(0,-1);
-  updateDots();
-  document.getElementById("pin-error").textContent = "";
-}
-function updateDots() {
-  for (let i=0;i<4;i++) {
-    document.getElementById("d"+i).classList.toggle("filled", i < currentPin.length);
-  }
-}
+// ─── PIN / AUTH ───────────────────────────────────────────────
 function checkPin() {
-  if (currentPin === PIN_ADMIN) {
-    isAdmin = true;
-    enterApp();
-  } else if (currentPin === PIN_MEMBER) {
-    isAdmin = false;
-    enterApp();
+  const prog = document.getElementById("pin-program-select").value;
+  const pin  = document.getElementById("pin-input").value.trim();
+  const err  = document.getElementById("pin-error");
+  if (!prog) { err.textContent = "Please select your program."; return; }
+  if (pin === ADMIN_PIN) {
+    isAdmin = true; currentProgram = prog; launchApp();
+  } else if (pin === MEMBER_PIN) {
+    isAdmin = false; currentProgram = prog; launchApp();
   } else {
-    document.getElementById("pin-error").textContent = "Incorrect PIN. Please try again.";
-    currentPin = "";
-    updateDots();
+    err.textContent = "Incorrect PIN. Please try again.";
+    document.getElementById("pin-input").value = "";
   }
 }
-function enterApp() {
+document.getElementById("pin-input").addEventListener("keydown", e => { if (e.key === "Enter") checkPin(); });
+
+function launchApp() {
   document.getElementById("pin-screen").style.display = "none";
-  document.getElementById("main-app").style.display = "";
+  document.getElementById("signout-btn").style.display = "inline-block";
   if (isAdmin) {
-    document.getElementById("tab-btn-admin").style.display = "";
+    document.getElementById("program-bar").style.display = "block";
+    document.getElementById("program-select").value = currentProgram;
+    document.querySelectorAll(".admin-only").forEach(el => el.style.display = "inline-block");
   }
-  document.getElementById("f-date").value = new Date().toISOString().split("T")[0];
-  loadNamesAndData();
+  document.getElementById("main-nav").style.display = "block";
+  document.getElementById("app-content").style.display = "block";
+  loadNames();
+  showTab("give-get");
 }
+
 function signOut() {
-  isAdmin = false;
-  currentPin = "";
-  allEntries = [];
-  allNames = [];
-  updateDots();
-  document.getElementById("pin-error").textContent = "";
+  isAdmin = false; currentProgram = ""; currentUser = ""; allEntries = [];
   document.getElementById("pin-screen").style.display = "flex";
-  document.getElementById("main-app").style.display = "none";
-  document.getElementById("tab-btn-admin").style.display = "none";
-  showTab("give");
+  document.getElementById("program-bar").style.display = "none";
+  document.getElementById("main-nav").style.display = "none";
+  document.getElementById("app-content").style.display = "none";
+  document.getElementById("signout-btn").style.display = "none";
+  document.getElementById("pin-input").value = "";
+  document.getElementById("pin-error").textContent = "";
+  document.getElementById("pin-program-select").value = "";
+  document.querySelectorAll(".admin-only").forEach(el => el.style.display = "none");
 }
 
-// ── DATA ─────────────────────────────────────────────
-function getProgram() { return document.getElementById("program-select").value; }
-
-async function loadNamesAndData() {
-  await loadNames();
-  await loadData(true);
+// ─── PROGRAM CHANGE (admin) ───────────────────────────────────
+function getProgram() {
+  return isAdmin ? document.getElementById("program-select").value : currentProgram;
+}
+function onProgramChange() {
+  currentProgram = document.getElementById("program-select").value;
+  loadNames();
+  const active = document.querySelector(".nav-tab.active");
+  if (active) showTab(active.dataset.tab || "give-get");
 }
 
+// ─── NAVIGATION ───────────────────────────────────────────────
+function showTab(tab) {
+  ["give-get","my-history","leaderboard","admin"].forEach(t => {
+    document.getElementById("tab-"+t).style.display = (t===tab) ? "block" : "none";
+  });
+  document.querySelectorAll(".nav-tab").forEach(el => {
+    el.classList.toggle("active", el.textContent.trim().toLowerCase().replace(/[^a-z]/g,"").includes(tab.replace("-","")));
+  });
+  if (tab==="leaderboard") loadLeaderboard();
+  if (tab==="admin") loadAdmin();
+  if (tab==="my-history") { loadHistoryNames(); }
+}
+
+// ─── NAMES ────────────────────────────────────────────────────
 async function loadNames() {
   const prog = getProgram();
+  const sel = document.getElementById("member-name");
+  sel.innerHTML = "<option>Loading…</option>";
   try {
     const res = await fetch(`${SCRIPT_URL}?action=names&program=${prog}`);
-    const json = await res.json();
-    if (json.success) {
-      allNames = json.names || [];
-      populateNameDropdowns();
-    }
-  } catch(e) { console.error("Names load error:", e); }
-}
-
-async function loadData(force) {
-  if (loading && !force) return;
-  loading = true;
-  const prog = getProgram();
-  try {
-    const res = await fetch(`${SCRIPT_URL}?program=${prog}`);
-    const json = await res.json();
-    if (json.success) {
-      allEntries = json.entries || [];
-      const lu = document.getElementById("last-updated");
-      if (lu) lu.textContent = "Updated " + new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
-    }
-  } catch(e) { console.error("Data load error:", e); }
-  loading = false;
-  refreshCurrentTab();
-}
-
-function onProgramChange() {
-  allEntries = [];
-  allNames = [];
-  loadNamesAndData();
-}
-
-function refreshCurrentTab() {
-  const active = document.querySelector(".tab.active")?.id?.replace("tab-btn-","") || "give";
-  if (active==="my") { populateNameDropdowns(); renderMyHistory(); }
-  if (active==="board") renderLeaderboard();
-  if (active==="admin") { populateAdminFilter(); renderAdmin(); }
-}
-
-// ── NAMES ─────────────────────────────────────────────
-function populateNameDropdowns() {
-  ["f-name","my-filter"].forEach(id => {
-    const sel = document.getElementById(id);
-    if (!sel) return;
-    const cur = sel.value;
-    const ph = id==="f-name" ? "— Select your name —" : "— Select your name —";
-    sel.innerHTML = `<option value="">${ph}</option>`;
-    allNames.forEach(n => {
-      const o = document.createElement("option");
-      o.value = n; o.textContent = n;
-      if (n===cur) o.selected = true;
-      sel.appendChild(o);
-    });
-  });
-}
-
-function populateAdminFilter() {
-  const sel = document.getElementById("admin-filter");
-  if (!sel) return;
-  const cur = sel.value;
-  const names = [...new Set(allEntries.map(e=>e.name))].filter(Boolean).sort();
-  sel.innerHTML = `<option value="">All team members</option>`;
-  names.forEach(n => {
-    const o = document.createElement("option");
-    o.value = n; o.textContent = n;
-    if (n===cur) o.selected = true;
-    sel.appendChild(o);
-  });
-}
-
-// ── BALANCE ───────────────────────────────────────────
-function getApprovedBalance(name) {
-  return allEntries
-    .filter(e => e.name===name && e.status!=="pending" && e.status!=="denied")
-    .reduce((s,e) => s+e.hours, 0);
-}
-
-function getTotalEarned(name) {
-  return allEntries.filter(e=>e.name===name && e.hours>0).reduce((s,e)=>s+e.hours,0);
-}
-
-function initials(name) {
-  return (name||"?").split(" ").filter(Boolean).map(w=>w[0].toUpperCase()).join("").slice(0,2);
-}
-
-// ── TABS ──────────────────────────────────────────────
-function showTab(t) {
-  ["give","my","board","admin"].forEach(id => {
-    document.getElementById("tab-"+id).style.display = id===t ? "" : "none";
-    const btn = document.getElementById("tab-btn-"+id);
-    if (btn) btn.classList.toggle("active", id===t);
-  });
-  if (t!=="give") loadData(false);
-  if (t==="my") populateNameDropdowns();
-  if (t==="admin") { populateAdminFilter(); renderAdmin(); }
-}
-
-// ── GIVE & GET ────────────────────────────────────────
-function toggleFields() {
-  const v = document.getElementById("f-type").value;
-  document.getElementById("work-fields").style.display = v==="work" ? "" : "none";
-  document.getElementById("request-fields").style.display = v==="request" ? "" : "none";
-  if (v==="request") showBalancePreview();
-  else document.getElementById("balance-preview").style.display="none";
-}
-
-function onNameChange() {
-  if (document.getElementById("f-type").value==="request") showBalancePreview();
-}
-
-function showBalancePreview() {
-  const name = document.getElementById("f-name").value;
-  const el = document.getElementById("balance-preview");
-  if (!name) { el.style.display="none"; return; }
-  const bal = getApprovedBalance(name);
-  el.style.display = "";
-  el.innerHTML = `<div class="banner banner-info"><i class="ti ti-info-circle" aria-hidden="true"></i> ${name}'s current balance: <strong>${bal.toFixed(1)} hrs</strong> (approved hours only)</div>`;
-}
-
-function showBanner(id, type, msg) {
-  const el = document.getElementById(id);
-  const icons = {success:"circle-check", error:"alert-circle", info:"info-circle", warning:"alert-triangle"};
-  el.className = "banner banner-"+type;
-  el.innerHTML = `<i class="ti ti-${icons[type]||'info-circle'}" aria-hidden="true"></i><span>${msg}</span>`;
-  el.style.display = "flex";
-  if (type==="success") setTimeout(()=>{ el.style.display="none"; }, 5000);
-}
-
-async function submitEntry() {
-  const btn = document.getElementById("submit-btn");
-  const name = document.getElementById("f-name").value;
-  const type = document.getElementById("f-type").value;
-  const prog = getProgram();
-
-  if (!name) { showBanner("give-banner","error","Please select your name."); return; }
-
-  let payload = { action:"submit", program:prog, name, type };
-
-  if (type==="work") {
-    const date = document.getElementById("f-date").value;
-    const hrs = parseFloat(document.getElementById("f-hours").value);
-    const desc = document.getElementById("f-desc").value.trim();
-    if (!date) { showBanner("give-banner","error","Please select a date."); return; }
-    if (!hrs||hrs<=0) { showBanner("give-banner","error","Please enter hours worked."); return; }
-    if (!desc) { showBanner("give-banner","error","Please describe what you worked on."); return; }
-    payload.detail = desc;
-    payload.hours = hrs;
-    payload.date = date;
-  } else {
-    const item = document.getElementById("f-item").value.trim();
-    const cost = parseFloat(document.getElementById("f-cost").value);
-    if (!item) { showBanner("give-banner","error","Please enter the item you want."); return; }
-    if (!cost||cost<=0) { showBanner("give-banner","error","Please enter the hour cost."); return; }
-    const bal = getApprovedBalance(name);
-    if (cost > bal) {
-      showBanner("give-banner","error",`Not enough hours. ${name}'s approved balance is ${bal.toFixed(1)} hrs but this costs ${cost} hrs.`);
-      return;
-    }
-    payload.detail = "Requested: " + item;
-    payload.hours = -cost;
+    const data = await res.json();
+    const names = data.names || [];
+    sel.innerHTML = names.length
+      ? `<option value="">— Select your name —</option>` + names.map(n=>`<option value="${n}">${n}</option>`).join("")
+      : `<option value="">No names found</option>`;
+  } catch(e) {
+    sel.innerHTML = "<option>Error loading names</option>";
   }
+}
 
-  btn.disabled = true;
-  btn.innerHTML = `<span class="spinner" aria-hidden="true"></span> Submitting…`;
+async function loadHistoryNames() {
+  const prog = getProgram();
+  const sel = document.getElementById("history-name");
+  try {
+    const res = await fetch(`${SCRIPT_URL}?action=names&program=${prog}`);
+    const data = await res.json();
+    const names = data.names || [];
+    sel.innerHTML = `<option value="">— Select name —</option>` + names.map(n=>`<option value="${n}">${n}</option>`).join("");
+  } catch(e) {}
+}
 
+// ─── ENTRY TYPE TOGGLE ────────────────────────────────────────
+function setType(t) {
+  entryType = t;
+  document.getElementById("work-fields").style.display   = (t==="Work")    ? "block" : "none";
+  document.getElementById("request-fields").style.display = (t==="Request") ? "block" : "none";
+  document.getElementById("btn-work").classList.toggle("active",    t==="Work");
+  document.getElementById("btn-request").classList.toggle("active", t==="Request");
+}
+
+// ─── SUBMIT ENTRY ─────────────────────────────────────────────
+async function submitEntry() {
+  const name = document.getElementById("member-name").value;
+  const msg  = document.getElementById("submit-msg");
+  if (!name) { msg.textContent = "Please select your name."; msg.style.color="var(--red)"; return; }
+  let detail, hours;
+  if (entryType === "Work") {
+    detail = document.getElementById("work-detail").value.trim();
+    hours  = parseFloat(document.getElementById("hours-worked").value);
+    if (!detail) { msg.textContent = "Please describe the activity."; msg.style.color="var(--red)"; return; }
+  } else {
+    const item  = document.getElementById("request-item").value.trim();
+    const notes = document.getElementById("request-notes").value.trim();
+    hours  = -parseFloat(document.getElementById("hours-request").value);
+    detail = item + (notes ? ` — ${notes}` : "");
+    if (!item) { msg.textContent = "Please enter what you're requesting."; msg.style.color="var(--red)"; return; }
+  }
+  msg.textContent = "Submitting…"; msg.style.color = "var(--teal)";
   try {
     await fetch(SCRIPT_URL, {
       method:"POST", mode:"no-cors",
       headers:{"Content-Type":"application/json"},
-      body:JSON.stringify(payload)
+      body: JSON.stringify({ action:"submit", program:getProgram(), name, type:entryType, detail, hours })
     });
-
-    const newEntry = {
-      id: Date.now(),
-      date: payload.date || new Date().toISOString().split("T")[0],
-      name: payload.name,
-      type: payload.type,
-      detail: payload.detail,
-      hours: payload.hours,
-      status: type==="request" ? "pending" : "approved",
-      entryId: "E"+Date.now()
-    };
-    allEntries.unshift(newEntry);
-
-    if (type==="request") {
-      showBanner("give-banner","warning","Request submitted and awaiting admin approval. Your balance will update once approved.");
-    } else {
-      showBanner("give-banner","success","Work hours submitted successfully!");
-    }
-
-    document.getElementById("f-hours").value="";
-    document.getElementById("f-desc").value="";
-    document.getElementById("f-item").value="";
-    document.getElementById("f-cost").value="";
-    document.getElementById("balance-preview").style.display="none";
-
+    msg.textContent = "✓ Submitted successfully!"; msg.style.color="var(--teal)";
+    document.getElementById("work-detail").value = "";
+    document.getElementById("request-item").value = "";
+    document.getElementById("request-notes").value = "";
   } catch(e) {
-    showBanner("give-banner","error","Submission failed. Please check your connection and try again.");
+    msg.textContent = "Error submitting. Please try again."; msg.style.color="var(--red)";
   }
-
-  btn.disabled = false;
-  btn.innerHTML = `<i class="ti ti-send" aria-hidden="true"></i> Submit`;
+  setTimeout(()=>{ msg.textContent=""; }, 4000);
 }
 
-// ── MY HISTORY ────────────────────────────────────────
-function renderMyHistory() {
-  const name = document.getElementById("my-filter").value;
-  const metricsEl = document.getElementById("my-metrics");
-  const tableEl = document.getElementById("my-table-wrap");
-  if (!name) {
-    metricsEl.style.display="none";
-    tableEl.innerHTML=`<div class="empty">Select your name above to see your history.</div>`;
-    return;
+// ─── MY HISTORY ───────────────────────────────────────────────
+async function loadHistory() {
+  const name = document.getElementById("history-name").value;
+  if (!name) return;
+  document.getElementById("history-stats").style.display = "none";
+  document.getElementById("history-table-card").style.display = "none";
+  document.getElementById("history-loader").style.display = "block";
+  try {
+    const res = await fetch(`${SCRIPT_URL}?program=${getProgram()}`);
+    const data = await res.json();
+    allEntries = data.entries || [];
+    const mine = allEntries.filter(e => e.name === name);
+    let earned=0, spent=0, pending=0;
+    mine.forEach(e => {
+      if (e.type==="Work" && e.status!=="denied") earned += parseFloat(e.hours)||0;
+      if (e.type==="Request" && e.status==="approved") spent += Math.abs(parseFloat(e.hours)||0);
+      if (e.type==="Request" && e.status==="pending")  pending += Math.abs(parseFloat(e.hours)||0);
+    });
+    document.getElementById("stat-earned").textContent  = earned.toFixed(1);
+    document.getElementById("stat-spent").textContent   = spent.toFixed(1);
+    document.getElementById("stat-balance").textContent = (earned-spent).toFixed(1);
+    document.getElementById("stat-pending").textContent = pending.toFixed(1);
+    document.getElementById("history-stats").style.display = "grid";
+    const tbody = document.getElementById("history-tbody");
+    tbody.innerHTML = mine.length ? mine.slice().reverse().map(e => `
+      <tr>
+        <td>${fmtDate(e.timestamp)}</td>
+        <td><span class="badge badge-${(e.type||"work").toLowerCase()}">${e.type||"Work"}</span></td>
+        <td title="${e.detail}">${truncate(e.detail,40)}</td>
+        <td style="font-weight:600;color:${parseFloat(e.hours)>0?"var(--teal)":"var(--red)"}">${parseFloat(e.hours)>0?"+":""}${parseFloat(e.hours).toFixed(1)}</td>
+        <td><span class="badge badge-${e.status||"approved"}">${statusLabel(e.status)}</span></td>
+      </tr>`).join("") : `<tr><td colspan="5" class="empty-note">No activity yet.</td></tr>`;
+    document.getElementById("history-table-card").style.display = "block";
+  } catch(err) {
+    console.error(err);
   }
-  const mine = allEntries.filter(e=>e.name===name);
-  const earned = getTotalEarned(name);
-  const spent = Math.abs(allEntries.filter(e=>e.name===name&&e.hours<0&&e.status==="approved").reduce((s,e)=>s+e.hours,0));
-  const pending = mine.filter(e=>e.status==="pending").length;
-  const bal = getApprovedBalance(name);
-
-  metricsEl.style.display="grid";
-  metricsEl.innerHTML=`
-    <div class="metric"><div class="metric-label">Hours earned</div><div class="metric-value teal">${earned.toFixed(1)}</div></div>
-    <div class="metric"><div class="metric-label">Hours spent</div><div class="metric-value amber">${spent.toFixed(1)}</div></div>
-    <div class="metric"><div class="metric-label">Balance</div><div class="metric-value blue">${bal.toFixed(1)}</div></div>
-    <div class="metric"><div class="metric-label">Pending</div><div class="metric-value purple">${pending}</div></div>
-  `;
-
-  if (mine.length===0) { tableEl.innerHTML=`<div class="empty">No entries yet for ${name}.</div>`; return; }
-
-  tableEl.innerHTML=`<table style="table-layout:fixed;">
-    <colgroup><col style="width:88px;"><col style="width:72px;"><col><col style="width:48px;"><col style="width:76px;"></colgroup>
-    <thead><tr><th>Date</th><th>Type</th><th>Detail</th><th>Hrs</th><th>Status</th></tr></thead>
-    <tbody>${mine.map(e=>`<tr>
-      <td>${e.date}</td>
-      <td><span class="badge badge-${e.type==="work"?"work":"request"}">${e.type==="work"?"Work":"Request"}</span></td>
-      <td title="${e.detail}">${e.detail}</td>
-      <td style="font-weight:500;color:${e.hours>0?"var(--teal)":"var(--red)"}">${e.hours>0?"+":""}${e.hours.toFixed(1)}</td>
-      <td><span class="badge badge-${e.status||"approved"}">${statusLabel(e.status)}</span></td>
-    </tr>`).join("")}</tbody>
-  </table>`;
+  document.getElementById("history-loader").style.display = "none";
 }
 
-function statusLabel(s) {
-  if (s==="pending") return "Pending";
-  if (s==="denied") return "Denied";
-  return "Approved";
+// ─── LEADERBOARD ──────────────────────────────────────────────
+async function loadLeaderboard() {
+  const lb = document.getElementById("lb-list");
+  lb.innerHTML = `<div class="loader">Loading…</div>`;
+  try {
+    const res = await fetch(`${SCRIPT_URL}?program=${getProgram()}`);
+    const data = await res.json();
+    const entries = data.entries || [];
+    const totals = {};
+    const balances = {};
+    entries.forEach(e => {
+      const n = e.name; if (!n) return;
+      if (!totals[n]) { totals[n]=0; balances[n]=0; }
+      const h = parseFloat(e.hours)||0;
+      if (e.type==="Work" && e.status!=="denied") { totals[n]+=h; balances[n]+=h; }
+      if (e.type==="Request" && e.status==="approved") balances[n]+=h;
+    });
+    const sorted = Object.entries(totals).sort((a,b)=>b[1]-a[1]);
+    if (!sorted.length) { lb.innerHTML=`<div class="empty-note">No data yet.</div>`; return; }
+    lb.innerHTML = sorted.map(([name, earned], i) => {
+      const rankClass = i===0?"gold":i===1?"silver":i===2?"bronze":"";
+      const medal = i===0?"🥇":i===1?"🥈":i===2?"🥉":"";
+      return `<div class="lb-row">
+        <div class="lb-rank ${rankClass}">${medal||("#"+(i+1))}</div>
+        <div class="lb-name">${name}</div>
+        <div><span class="lb-hrs">${earned.toFixed(1)} hrs</span>
+        <span class="lb-bal">bal: ${(balances[name]||0).toFixed(1)}</span></div>
+      </div>`;
+    }).join("");
+  } catch(e) {
+    lb.innerHTML = `<div class="empty-note">Error loading leaderboard.</div>`;
+  }
 }
 
-// ── LEADERBOARD ───────────────────────────────────────
-function setSortMode(mode) {
-  sortMode=mode;
-  document.getElementById("sort-hrs").classList.toggle("active",mode==="hours");
-  document.getElementById("sort-name").classList.toggle("active",mode==="name");
-  renderLeaderboard();
+// ─── ADMIN ────────────────────────────────────────────────────
+async function loadAdmin() {
+  document.getElementById("admin-pending").innerHTML = `<div class="loader">Loading…</div>`;
+  document.getElementById("admin-tbody").innerHTML = "";
+  try {
+    const res = await fetch(`${SCRIPT_URL}?program=${getProgram()}`);
+    const data = await res.json();
+    allEntries = data.entries || [];
+    renderAdmin();
+  } catch(e) {
+    document.getElementById("admin-pending").innerHTML = `<div class="empty-note">Error loading data.</div>`;
+  }
 }
 
-function renderLeaderboard() {
-  // Build earned map (gross hours worked, ignoring spending)
-  const earnedMap = {};
-  const balMap = {};
-  allNames.forEach(n=>{ earnedMap[n]=0; balMap[n]=0; });
-  allEntries.forEach(e=>{
-    if (e.status==="pending"||e.status==="denied") return;
-    if (e.hours>0) earnedMap[e.name]=(earnedMap[e.name]||0)+e.hours;
-    balMap[e.name]=(balMap[e.name]||0)+e.hours;
-  });
-
-  // Sort: always by earned for ranking; name toggle for alpha
-  let sorted = Object.entries(earnedMap);
-  if (sortMode==="hours") sorted.sort((a,b)=>b[1]-a[1]);
-  else sorted.sort((a,b)=>a[0].localeCompare(b[0]));
-
-  const maxEarned = sorted.reduce((m,[,h])=>Math.max(m,h),0)||1;
-  const rankColors=["gold","silver","bronze"];
-  const list=document.getElementById("leaderboard-list");
-  if (sorted.length===0){list.innerHTML=`<div class="empty">No data yet.</div>`;return;}
-
-  list.innerHTML=sorted.map(([name,earned],i)=>{
-    const bal = balMap[name]||0;
-    const pct=Math.round((earned/maxEarned)*100);
-    const rc=sortMode==="hours"&&i<3?rankColors[i]:"";
-    return `<div class="leaderboard-row">
-      <span class="rank ${rc}">${i+1}</span>
-      <div class="avatar" aria-hidden="true">${initials(name)}</div>
-      <span class="student-name">${name}</span>
-      <div class="bar-wrap" aria-hidden="true"><div class="bar-fill" style="width:${pct}%"></div></div>
-      <div class="hour-stats">
-        <span class="hour-earned">${earned.toFixed(1)} earned</span>
-        <span class="hour-balance">${bal.toFixed(1)} balance</span>
-      </div>
-    </div>`;
-  }).join("");
-
-  const wrap=document.getElementById("chart-wrap");
-  const barH=Math.max(sorted.length*38+60,160);
-  wrap.style.height=barH+"px";
-  const canvas=document.getElementById("board-chart");
-  canvas.setAttribute("aria-label","Hours earned by team member: "+sorted.map(([n,h])=>n+" "+h.toFixed(1)).join(", "));
-  if (boardChart) boardChart.destroy();
-  boardChart=new Chart(canvas,{
-    type:"bar",
-    data:{
-      labels:sorted.map(([n])=>n.split(" ")[0]),
-      datasets:[{label:"Hours earned",data:sorted.map(([,h])=>parseFloat(h.toFixed(1))),backgroundColor:"#B5D4F4",borderColor:"#185FA5",borderWidth:1}]
-    },
-    options:{
-      responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false}},
-      scales:{
-        y:{beginAtZero:true,ticks:{font:{size:11}}},
-        x:{ticks:{font:{size:11},maxRotation:35,autoSkip:false}}
-      }
-    }
-  });
-}
-
-// ── ADMIN ─────────────────────────────────────────────
 function renderAdmin() {
-  const allNames_ = [...new Set(allEntries.map(e=>e.name))];
-  const totalEarned = allEntries.filter(e=>e.hours>0).reduce((s,e)=>s+e.hours,0);
-  const pendingList = allEntries.filter(e=>e.status==="pending");
-  const approved = allEntries.filter(e=>e.status==="approved"&&e.type==="request").length;
-
-  document.getElementById("admin-metrics").innerHTML=`
-    <div class="metric"><div class="metric-label">Team members</div><div class="metric-value">${allNames_.length}</div></div>
-    <div class="metric"><div class="metric-label">Hours logged</div><div class="metric-value teal">${totalEarned.toFixed(1)}</div></div>
-    <div class="metric"><div class="metric-label">Pending requests</div><div class="metric-value amber">${pendingList.length}</div></div>
-    <div class="metric"><div class="metric-label">Approved requests</div><div class="metric-value blue">${approved}</div></div>
-  `;
-
-  // Pending approvals
-  const pendingEl = document.getElementById("pending-list");
-  if (pendingList.length===0) {
-    pendingEl.innerHTML=`<div class="banner banner-success" style="margin-bottom:1rem;"><i class="ti ti-circle-check" aria-hidden="true"></i> No pending requests.</div>`;
-  } else {
-    pendingEl.innerHTML = pendingList.map(e=>`
-      <div class="approval-card" id="acard-${e.entryId}">
-        <div class="approval-header">
-          <div style="display:flex;align-items:flex-start;gap:10px;flex:1;min-width:0;">
-            <div class="avatar" style="margin-top:2px;" aria-hidden="true">${initials(e.name)}</div>
-            <div class="approval-info">
-              <div class="approval-name">${e.name}</div>
-              <div class="approval-detail">${e.detail}</div>
-              <div class="approval-meta">${e.date} &nbsp;·&nbsp; Cost: ${Math.abs(e.hours).toFixed(1)} hrs &nbsp;·&nbsp; Balance: ${getApprovedBalance(e.name).toFixed(1)} hrs available</div>
-            </div>
-          </div>
-          <div class="approval-actions">
-            <button class="btn btn-sm btn-approve" onclick="handleApproval('${e.entryId}','approve')">
-              <i class="ti ti-check" aria-hidden="true"></i> Approve
-            </button>
-            <button class="btn btn-sm btn-deny" onclick="handleApproval('${e.entryId}','deny')">
-              <i class="ti ti-x" aria-hidden="true"></i> Deny
-            </button>
-          </div>
-        </div>
+  const pending = allEntries.filter(e => e.status==="pending");
+  const pdiv = document.getElementById("admin-pending");
+  pdiv.innerHTML = pending.length ? pending.map(e => `
+    <div class="pending-card" id="acard-${e.entryId}">
+      <div class="pname">${e.name}</div>
+      <div class="pdetail">Requests: ${e.detail} &nbsp;|&nbsp; ${Math.abs(parseFloat(e.hours)).toFixed(1)} hrs &nbsp;|&nbsp; ${fmtDate(e.timestamp)}</div>
+      <div class="pcard-actions">
+        <button class="btn-approve" onclick="handleApproval('${e.entryId}','approve')">✓ Approve</button>
+        <button class="btn-deny"    onclick="handleApproval('${e.entryId}','deny')">✗ Deny</button>
       </div>
-    `).join("");
-  }
+    </div>`).join("") : `<div class="empty-note">No pending requests.</div>`;
 
-  // All activity table
-  const filterName = document.getElementById("admin-filter").value;
-  const rows = filterName ? allEntries.filter(e=>e.name===filterName) : allEntries;
   const tbody = document.getElementById("admin-tbody");
-  if (rows.length===0){
-    tbody.innerHTML=`<tr><td colspan="6"><div class="empty">No entries yet.</div></td></tr>`;
-    return;
-  }
-  tbody.innerHTML=rows.map(e=>`<tr>
-    <td>${e.date}</td>
-    <td><div style="display:flex;align-items:center;gap:6px;"><div class="avatar" style="width:22px;height:22px;font-size:10px;" aria-hidden="true">${initials(e.name)}</div><span>${e.name.split(" ")[0]}</span></div></td>
-    <td><span class="badge badge-${e.type==="work"?"work":"request"}">${e.type==="work"?"Work":"Request"}</span></td>
-    <td title="${e.detail}">${e.detail}</td>
-    <td style="font-weight:500;color:${e.hours>0?"var(--teal)":"var(--red)"}">${e.hours>0?"+":""}${e.hours.toFixed(1)}</td>
-    <td><span class="badge badge-${e.status||"approved"}">${statusLabel(e.status)}</span></td>
-  </tr>`).join("");
+  tbody.innerHTML = allEntries.slice().reverse().map(e => `
+    <tr>
+      <td>${fmtDate(e.timestamp)}</td>
+      <td>${e.name}</td>
+      <td><span class="badge badge-${(e.type||"work").toLowerCase()}">${e.type||"Work"}</span></td>
+      <td title="${e.detail}">${truncate(e.detail,35)}</td>
+      <td style="font-weight:600;color:${parseFloat(e.hours)>0?"var(--teal)":"var(--red)"}">${parseFloat(e.hours)>0?"+":""}${parseFloat(e.hours).toFixed(1)}</td>
+      <td><span class="badge badge-${e.status||"approved"}">${statusLabel(e.status)}</span></td>
+    </tr>`).join("");
 }
 
 async function handleApproval(entryId, action) {
-  const prog = getProgram();
-  const entry = allEntries.find(e=>e.entryId===entryId);
-  if (!entry) return;
-
   const card = document.getElementById("acard-"+entryId);
-  if (card) {
-    card.style.opacity="0.5";
-    card.querySelectorAll("button").forEach(b=>b.disabled=true);
-  }
-
+  if (card) { card.style.opacity="0.5"; card.querySelectorAll("button").forEach(b=>b.disabled=true); }
   try {
     await fetch(SCRIPT_URL, {
       method:"POST", mode:"no-cors",
       headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({ action, program:prog, entryId })
+      body: JSON.stringify({ action, program:getProgram(), entryId })
     });
-    entry.status = action==="approve" ? "approved" : "denied";
-  } catch(e) {
-    console.error("Approval error:", e);
-  }
-
+    const entry = allEntries.find(e=>e.entryId===entryId);
+    if (entry) entry.status = action==="approve" ? "approved" : "denied";
+  } catch(e) { console.error("Approval error:", e); }
   renderAdmin();
+}
+
+// ─── HELPERS ──────────────────────────────────────────────────
+function fmtDate(ts) {
+  if (!ts) return "—";
+  const d = new Date(ts);
+  return isNaN(d) ? ts : d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"2-digit"});
+}
+function truncate(str, n) { return str && str.length > n ? str.slice(0,n)+"…" : (str||""); }
+function statusLabel(s) {
+  return s==="approved"?"Approved":s==="denied"?"Denied":s==="pending"?"Pending":"Approved";
 }
 </script>
 </body>
