@@ -80,6 +80,7 @@ tr:hover td { background: #f0fdf9; }
 .badge-returned { background: #e0e7ff; color: #3730a3; }
 .badge-work { background: #e0f2fe; color: #0369a1; }
 .badge-request { background: #fce7f3; color: #9d174d; }
+.badge-redeem { background: #ffedd5; color: #9a3412; }
 
 .lb-row { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 9px; margin-bottom: 8px; background: var(--bg); }
 .lb-rank { font-size: 1.1rem; font-weight: 800; color: var(--teal); min-width: 28px; }
@@ -686,7 +687,15 @@ async function loadHistory() {
     document.getElementById("history-stats").style.display = "grid";
 
     const tbody = document.getElementById("history-tbody");
-    tbody.innerHTML = mine.length ? mine.slice().reverse().map(e => `
+    const redeemRows = myRedeems.map(e => ({
+      date: e.date,
+      type: "Redeem",
+      detail: `${e.category} — ${e.item}`,
+      hours: -(parseFloat(e.cost)||0),
+      status: e.status
+    }));
+    const combined = mine.concat(redeemRows).sort((a,b) => (b.date||"").localeCompare(a.date||""));
+    tbody.innerHTML = combined.length ? combined.map(e => `
       <tr>
         <td>${fmtDate(e.date || e.timestamp)}</td>
         <td><span class="badge badge-${(e.type||"work").toLowerCase()}">${e.type||"Work"}</span></td>
