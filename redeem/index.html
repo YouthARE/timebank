@@ -1,3 +1,71 @@
+
+Claude finished the response
+I think I did what I intended and wanted. Still seeing Error loading names. Let's go slow and please break it down for me on what to test.
+
+
+Thought for 20s
+Thought for 20s
+Let's slow down and get the actual error message instead of guessing — the "Error loading names" text just means something failed, but your browser's developer console will show exactly what.
+
+Open DevTools Console and reload
+On youthare.github.io/timebank/redeem, press F12 (or right-click → Inspect) to open Developer Tools. Click the 'Console' tab. Reload the page and log in with your PIN again. Look for any red error text that appears — copy or screenshot exactly what it says. This tells us whether it's a network failure, a CORS block, or something else entirely.
+1
+2
+3
+4
+Start with step 1 (Console tab) — whatever red text shows there will tell us immediately whether this is a caching issue, a broken URL, or something new. Screenshot it if you can and send it over.
+
+1786550395364_image.png
+This seems crazy to me. Now it is working and I see the names. Here's the screen shot.
+
+Not crazy at all — that's a completely believable outcome. The most likely explanation: GitHub Pages took a minute or two to finish rebuilding after your commit, and what you were seeing right after committing was still the previous (broken) version being served from GitHub's cache. By the time you tested again just now, the rebuild had caught up with your fix.
+
+The screenshot confirms it's genuinely working now — "Your Name" shows "— Select your name —" (the ready-to-pick state), and the only console entry is a harmless missing favicon icon, completely unrelated to the app's functionality.
+
+Good time to run through that fuller test sequence from earlier, now that the foundation is solid:
+
+Log a test work entry (0.5 hrs)
+Check My Hours — confirm the entry shows up, and this time check whether the date now displays instead of "—"
+Try the Redeem tab — pick a category, confirm the cost auto-fills, submit a test request
+Switch to Admin, approve that test request
+Peek at the actual Google Sheet to confirm a Redeem_JLS tab appeared with your test row
+If the date still doesn't show correctly in step 2, that's useful to know — but given the pattern today, I'd bet the caching lag was the whole story and the date fix is live too.
+
+1786550817253_image.png
+Most things look very good. I tested with member "Trainer". I put in a request  to redeem and approved. That Spent did not update.
+
+
+Thought for 15s
+Thought for 15s
+Good catch, and this makes sense once you see why: the Redeem catalog writes to a separate Redeem_JLS tab, entirely apart from the original Work/Request tab that "My Hours" reads from. So the stat boxes here only ever summed the old Request-type entries — they have no idea the new Redeem tab exists. Your test redemption is sitting correctly in Redeem_JLS, approved, but it's invisible to this particular screen.
+
+That's a real gap worth closing — a student shouldn't have to check two different tabs to know their real balance. Let me fix it so "My Hours" pulls from both ledgers and shows one true number.
+
+
+Edited 2 files, ran a command, read a file · 2 notes
+Edited 2 files, ran a command, read a file · 2 notes
+Same process: paste this over redeem/index.html on GitHub, commit, then given today's caching lag — wait a couple minutes, or use a fresh Incognito window rather than a plain refresh — before retesting.
+
+After it deploys, go back to Trainer's My Hours: Spent should now show 5 (your Book redemption cost) and Balance should drop to -3 (2.0 earned − 5 spent), assuming that's the test entry that's approved.
+
+
+Index
+Code · HTML 
+1786550895107_image.png
+Here's the image of the approval
+
+That confirms the approval went through cleanly — "Service — transportation," 1 credit, Approved.
+
+Now the real test: click over to My Hours for Trainer and check whether Spent shows 1 and Balance drops to 1.0 (2.0 earned − 1 spent), reflecting the merge fix. If it shows those numbers, both the Redeem tab and the unified balance are working correctly end to end.
+
+
+Here's My Hours. It does not show the Spent and Balance correctly.
+
+
+Claude is AI and can make mistakes. Please double-check responses.
+
+
+Index · HTML
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -24,7 +92,7 @@ header h1 { font-size: 1.25rem; font-weight: 700; letter-spacing: 0.02em; }
 header .subtitle { font-size: 0.78rem; opacity: 0.85; }
 #signout-btn { background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.4); color: #fff; border-radius: 6px; padding: 5px 12px; font-size: 0.82rem; cursor: pointer; display: none; }
 #signout-btn:hover { background: rgba(255,255,255,0.28); }
-
+ 
 #pin-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80vh; gap: 18px; padding: 24px; }
 .pin-card { background: var(--card); border-radius: 14px; box-shadow: var(--shadow); padding: 32px 28px; width: 100%; max-width: 340px; text-align: center; }
 .pin-card h2 { font-size: 1.2rem; color: var(--teal); margin-bottom: 6px; }
@@ -34,18 +102,18 @@ header .subtitle { font-size: 0.78rem; opacity: 0.85; }
 .pin-btn { margin-top: 12px; width: 100%; background: var(--teal); color: #fff; border: none; border-radius: 8px; padding: 11px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.2s; }
 .pin-btn:hover { background: var(--teal-dark); }
 .pin-error { color: var(--red); font-size: 0.85rem; margin-top: 8px; min-height: 18px; }
-
+ 
 #program-bar { background: #fff; border-bottom: 2px solid var(--border); padding: 10px 12px; display: none; }
 #program-bar label { font-size: 0.82rem; font-weight: 600; color: var(--teal); margin-right: 8px; }
 #program-select { border: 1.5px solid var(--teal); border-radius: 7px; padding: 6px 10px; font-size: 0.9rem; color: var(--text); background: #fff; cursor: pointer; }
-
+ 
 #main-nav { background: #fff; border-bottom: 2px solid var(--border); display: none; overflow-x: auto; white-space: nowrap; }
 .nav-tab { display: inline-block; padding: 11px 18px; font-size: 0.88rem; font-weight: 600; color: var(--muted); cursor: pointer; border-bottom: 3px solid transparent; transition: color 0.2s, border-color 0.2s; }
 .nav-tab.active { color: var(--teal); border-bottom-color: var(--teal); }
 .nav-tab:hover:not(.active) { color: var(--text); }
-
+ 
 #app-content { display: none; padding: 16px; max-width: 700px; margin: 0 auto; }
-
+ 
 .card { background: var(--card); border-radius: 12px; box-shadow: var(--shadow); padding: 20px; margin-bottom: 16px; }
 .card h3 { font-size: 1rem; font-weight: 700; color: var(--teal); margin-bottom: 14px; }
 .form-group { margin-bottom: 13px; }
@@ -59,19 +127,19 @@ header .subtitle { font-size: 0.78rem; opacity: 0.85; }
 .submit-btn { background: var(--teal); color: #fff; border: none; border-radius: 8px; padding: 11px 22px; font-size: 0.95rem; font-weight: 700; cursor: pointer; width: 100%; margin-top: 4px; transition: background 0.2s; }
 .submit-btn:hover { background: var(--teal-dark); }
 .submit-msg { text-align: center; font-size: 0.88rem; color: var(--teal); margin-top: 8px; min-height: 20px; font-weight: 600; }
-
+ 
 .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
 .stat-box { background: var(--card); border-radius: 10px; box-shadow: var(--shadow); padding: 13px 8px; text-align: center; }
 .stat-box .val { font-size: 1.5rem; font-weight: 800; color: var(--teal); }
 .stat-box .lbl { font-size: 0.7rem; color: var(--muted); margin-top: 2px; font-weight: 600; text-transform: uppercase; }
-
+ 
 .tbl-wrap { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
 th { background: #f0fdf9; color: var(--teal); font-weight: 700; text-align: left; padding: 8px 10px; border-bottom: 2px solid var(--border); }
 td { padding: 8px 10px; border-bottom: 1px solid #f0fdf4; vertical-align: middle; }
 tr:last-child td { border-bottom: none; }
 tr:hover td { background: #f0fdf9; }
-
+ 
 .badge { display: inline-block; border-radius: 5px; padding: 2px 8px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
 .badge-approved { background: #d1fae5; color: #065f46; }
 .badge-pending { background: #fef3c7; color: #92400e; }
@@ -80,7 +148,7 @@ tr:hover td { background: #f0fdf9; }
 .badge-returned { background: #e0e7ff; color: #3730a3; }
 .badge-work { background: #e0f2fe; color: #0369a1; }
 .badge-request { background: #fce7f3; color: #9d174d; }
-
+ 
 .lb-row { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 9px; margin-bottom: 8px; background: var(--bg); }
 .lb-rank { font-size: 1.1rem; font-weight: 800; color: var(--teal); min-width: 28px; }
 .lb-rank.gold { color: #d97706; }
@@ -89,7 +157,7 @@ tr:hover td { background: #f0fdf9; }
 .lb-name { flex: 1; font-weight: 600; font-size: 0.95rem; }
 .lb-hrs { font-size: 1rem; font-weight: 800; color: var(--teal); }
 .lb-bal { font-size: 0.78rem; color: var(--muted); margin-left: 4px; }
-
+ 
 .admin-section { margin-bottom: 20px; }
 .admin-section h4 { font-size: 0.9rem; font-weight: 700; color: var(--teal); margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
 .pending-card { background: #fffbeb; border: 1px solid #fde68a; border-radius: 9px; padding: 13px 15px; margin-bottom: 10px; }
@@ -106,15 +174,15 @@ tr:hover td { background: #f0fdf9; }
 .btn-return { background: #6366f1; color: #fff; border: none; border-radius: 6px; padding: 6px 15px; font-size: 0.82rem; font-weight: 700; cursor: pointer; }
 .btn-return:hover { background: #4f46e5; }
 .empty-note { text-align: center; color: var(--muted); font-size: 0.87rem; padding: 18px 0; }
-
+ 
 .type-toggle { display: flex; gap: 8px; margin-bottom: 14px; }
 .type-btn { flex: 1; padding: 9px; border-radius: 8px; border: 2px solid var(--border); background: #fff; font-weight: 700; font-size: 0.88rem; cursor: pointer; transition: all 0.2s; color: var(--muted); }
 .type-btn.active { border-color: var(--teal); background: var(--teal); color: #fff; }
-
+ 
 .cost-display { background: var(--bg); border: 1.5px dashed var(--teal); border-radius: 8px; padding: 10px 14px; text-align: center; font-weight: 700; color: var(--teal); margin-bottom: 13px; }
-
+ 
 .loader { text-align: center; color: var(--muted); font-size: 0.87rem; padding: 20px; }
-
+ 
 @media (max-width: 480px) {
   .stats-row { grid-template-columns: repeat(2, 1fr); }
   .nav-tab { padding: 10px 12px; font-size: 0.82rem; }
@@ -122,7 +190,7 @@ tr:hover td { background: #f0fdf9; }
 </style>
 </head>
 <body>
-
+ 
 <header>
   <div>
     <div class="subtitle">YouthARE</div>
@@ -130,7 +198,7 @@ tr:hover td { background: #f0fdf9; }
   </div>
   <button id="signout-btn" onclick="signOut()">Sign Out</button>
 </header>
-
+ 
 <!-- PIN SCREEN -->
 <div id="pin-screen">
   <div class="pin-card">
@@ -154,7 +222,7 @@ tr:hover td { background: #f0fdf9; }
     <button class="pin-btn" onclick="checkPin()">Enter</button>
   </div>
 </div>
-
+ 
 <!-- PROGRAM BAR (admin only) -->
 <div id="program-bar">
   <label for="program-select">Program:</label>
@@ -171,7 +239,7 @@ tr:hover td { background: #f0fdf9; }
     <option value="BPS3">BPS3</option>
   </select>
 </div>
-
+ 
 <!-- MAIN NAV -->
 <div id="main-nav">
   <span class="nav-tab active" onclick="showTab('give-get')">Give &amp; Get</span>
@@ -180,10 +248,10 @@ tr:hover td { background: #f0fdf9; }
   <span class="nav-tab" onclick="showTab('leaderboard')">Leaderboard</span>
   <span class="nav-tab admin-only" onclick="showTab('admin')" style="display:none">Admin</span>
 </div>
-
+ 
 <!-- APP CONTENT -->
 <div id="app-content">
-
+ 
   <!-- GIVE & GET TAB -->
   <div id="tab-give-get">
     <div class="card">
@@ -243,7 +311,7 @@ tr:hover td { background: #f0fdf9; }
       <div class="submit-msg" id="submit-msg"></div>
     </div>
   </div>
-
+ 
   <!-- MY HISTORY TAB -->
   <div id="tab-my-history" style="display:none">
     <div class="form-group" style="margin-bottom:14px;">
@@ -269,7 +337,7 @@ tr:hover td { background: #f0fdf9; }
     </div>
     <div class="loader" id="history-loader" style="display:none">Loading…</div>
   </div>
-
+ 
   <!-- REDEEM TAB (NEW) -->
   <div id="tab-redeem" style="display:none">
     <div class="card">
@@ -315,13 +383,13 @@ tr:hover td { background: #f0fdf9; }
       <button class="submit-btn" id="redeem-submit-btn" style="display:none" onclick="submitRedeem()">Submit Request</button>
       <div class="submit-msg" id="redeem-msg"></div>
     </div>
-
+ 
     <div class="card">
       <h3>My Redeem Requests</h3>
       <div id="redeem-my-list"><div class="empty-note">Select your name above to see your requests.</div></div>
     </div>
   </div>
-
+ 
   <!-- LEADERBOARD TAB -->
   <div id="tab-leaderboard" style="display:none">
     <div class="card">
@@ -329,7 +397,7 @@ tr:hover td { background: #f0fdf9; }
       <div id="lb-list"><div class="loader">Loading…</div></div>
     </div>
   </div>
-
+ 
   <!-- ADMIN TAB -->
   <div id="tab-admin" style="display:none">
     <div class="card">
@@ -367,14 +435,14 @@ tr:hover td { background: #f0fdf9; }
       </div>
     </div>
   </div>
-
+ 
 </div><!-- end app-content -->
-
+ 
 <script>
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyWnf23kv98S8HME6H8u76FrMztNzLtRvuaSoEa-zmqipq6tRF5B9cNow6rAF6kC0k0/exec";
 const MEMBER_PIN = "1249";
 const ADMIN_PIN = "9128";
-
+ 
 const CATEGORY_COST = {
   "Book": 2, "Game": 3, "Sports Gear": 4, "Clothing": 4,
   "Art & School Supplies": 5, "Tool": 5, "Shared Resource": 5, "Service": 1
@@ -384,14 +452,14 @@ const CATEGORY_TYPE = {
   "Art & School Supplies": "Individual", "Tool": "Individual",
   "Shared Resource": "Shared", "Service": "Service"
 };
-
+ 
 let isAdmin = false;
 let currentProgram = "";
 let currentUser = "";
 let allEntries = [];
 let allRedeemEntries = [];
 let entryType = "Work";
-
+ 
 // ─── PIN / AUTH ───────────────────────────────────────────────
 function checkPin() {
   const prog = document.getElementById("pin-program-select").value;
@@ -408,7 +476,7 @@ function checkPin() {
   }
 }
 document.getElementById("pin-input").addEventListener("keydown", e => { if (e.key === "Enter") checkPin(); });
-
+ 
 function launchApp() {
   document.getElementById("pin-screen").style.display = "none";
   document.getElementById("signout-btn").style.display = "inline-block";
@@ -422,7 +490,7 @@ function launchApp() {
   loadNames();
   showTab("give-get");
 }
-
+ 
 function signOut() {
   isAdmin = false; currentProgram = ""; currentUser = ""; allEntries = []; allRedeemEntries = [];
   document.getElementById("pin-screen").style.display = "flex";
@@ -435,7 +503,7 @@ function signOut() {
   document.getElementById("pin-program-select").value = "";
   document.querySelectorAll(".admin-only").forEach(el => el.style.display = "none");
 }
-
+ 
 // ─── PROGRAM CHANGE (admin) ───────────────────────────────────
 function getProgram() {
   return isAdmin ? document.getElementById("program-select").value : currentProgram;
@@ -446,7 +514,7 @@ function onProgramChange() {
   const active = document.querySelector(".nav-tab.active");
   if (active) showTab(active.dataset.tab || "give-get");
 }
-
+ 
 // ─── NAVIGATION ───────────────────────────────────────────────
 function showTab(tab) {
   ["give-get","my-history","redeem","leaderboard","admin"].forEach(t => {
@@ -460,7 +528,7 @@ function showTab(tab) {
   if (tab==="my-history") { loadHistoryNames(); }
   if (tab==="redeem") { loadRedeemNames(); }
 }
-
+ 
 // ─── NAMES ────────────────────────────────────────────────────
 async function loadNames() {
   const prog = getProgram();
@@ -498,7 +566,7 @@ async function loadRedeemNames() {
   } catch(e) {}
   document.getElementById("redeem-my-list").innerHTML = `<div class="empty-note">Select your name above to see your requests.</div>`;
 }
-
+ 
 // ─── ENTRY TYPE TOGGLE (Give & Get) ───────────────────────────
 function setType(t) {
   entryType = t;
@@ -507,13 +575,13 @@ function setType(t) {
   document.getElementById("btn-work").classList.toggle("active", t==="Work");
   document.getElementById("btn-request").classList.toggle("active", t==="Request");
 }
-
+ 
 // ─── SUBMIT ENTRY (Give & Get) ─────────────────────────────────
 async function submitEntry() {
   const name = document.getElementById("member-name").value;
   const msg = document.getElementById("submit-msg");
   if (!name) { msg.textContent = "Please select your name."; msg.style.color="var(--red)"; return; }
-
+ 
   let detail, hours;
   if (entryType === "Work") {
     detail = document.getElementById("work-detail").value.trim();
@@ -526,7 +594,7 @@ async function submitEntry() {
     detail = item + (notes ? ` — ${notes}` : "");
     if (!item) { msg.textContent = "Please enter what you're requesting."; msg.style.color="var(--red)"; return; }
   }
-
+ 
   msg.textContent = "Submitting…"; msg.style.color = "var(--teal)";
   try {
     await fetch(SCRIPT_URL, {
@@ -543,7 +611,7 @@ async function submitEntry() {
   }
   setTimeout(()=>{ msg.textContent=""; }, 4000);
 }
-
+ 
 // ─── REDEEM: category → cost + conditional fields ─────────────
 function onRedeemCategoryChange() {
   const cat = document.getElementById("redeem-category").value;
@@ -554,7 +622,7 @@ function onRedeemCategoryChange() {
   const scheduledGroup = document.getElementById("redeem-scheduled-group");
   const notesGroup = document.getElementById("redeem-notes-group");
   const submitBtn = document.getElementById("redeem-submit-btn");
-
+ 
   if (!cat) {
     costDisplay.style.display = "none";
     itemGroup.style.display = "none";
@@ -564,26 +632,26 @@ function onRedeemCategoryChange() {
     submitBtn.style.display = "none";
     return;
   }
-
+ 
   const cost = CATEGORY_COST[cat];
   const type = CATEGORY_TYPE[cat];
   costDisplay.style.display = "block";
   costDisplay.textContent = type === "Shared"
     ? `${cost} credits per day`
     : `${cost} credit${cost>1?"s":""}`;
-
+ 
   itemGroup.style.display = "block";
   itemLabel.textContent = type === "Service" ? "What service do you need?" : "What are you requesting?";
   document.getElementById("redeem-item").placeholder = type === "Service"
     ? "e.g. 'help with algebra homework'"
     : "Be specific — e.g. 'used soccer cleats, size 6'";
-
+ 
   returnByGroup.style.display = (type === "Shared") ? "block" : "none";
   scheduledGroup.style.display = (type === "Service") ? "block" : "none";
   notesGroup.style.display = "block";
   submitBtn.style.display = "block";
 }
-
+ 
 // ─── REDEEM: submit request ────────────────────────────────────
 async function submitRedeem() {
   const name = document.getElementById("redeem-name").value;
@@ -593,11 +661,11 @@ async function submitRedeem() {
   const scheduledDate = document.getElementById("redeem-scheduled").value.trim();
   const notes = document.getElementById("redeem-notes").value.trim();
   const msg = document.getElementById("redeem-msg");
-
+ 
   if (!name) { msg.textContent = "Please select your name."; msg.style.color="var(--red)"; return; }
   if (!category) { msg.textContent = "Please select a category."; msg.style.color="var(--red)"; return; }
   if (!item) { msg.textContent = "Please describe what you're requesting."; msg.style.color="var(--red)"; return; }
-
+ 
   msg.textContent = "Submitting…"; msg.style.color = "var(--teal)";
   try {
     await fetch(SCRIPT_URL, {
@@ -621,11 +689,11 @@ async function submitRedeem() {
   }
   setTimeout(()=>{ msg.textContent=""; }, 5000);
 }
-
+ 
 document.getElementById("redeem-name").addEventListener("change", function() {
   if (this.value) loadMyRedeemRequests(this.value);
 });
-
+ 
 async function loadMyRedeemRequests(name) {
   const list = document.getElementById("redeem-my-list");
   list.innerHTML = `<div class="loader">Loading…</div>`;
@@ -644,7 +712,7 @@ async function loadMyRedeemRequests(name) {
     list.innerHTML = `<div class="empty-note">Error loading requests.</div>`;
   }
 }
-
+ 
 // ─── MY HISTORY ───────────────────────────────────────────────
 async function loadHistory() {
   const name = document.getElementById("history-name").value;
@@ -653,9 +721,15 @@ async function loadHistory() {
   document.getElementById("history-table-card").style.display = "none";
   document.getElementById("history-loader").style.display = "block";
   try {
-    const res = await fetch(`${SCRIPT_URL}?program=${getProgram()}`);
+    const [res, redeemRes] = await Promise.all([
+      fetch(`${SCRIPT_URL}?program=${getProgram()}`),
+      fetch(`${SCRIPT_URL}?action=redeemEntries&program=${getProgram()}`)
+    ]);
     const data = await res.json();
+    const redeemData = await redeemRes.json();
     allEntries = data.entries || [];
+    const myRedeems = (redeemData.entries || []).filter(e => e.name === name);
+ 
     const mine = allEntries.filter(e => e.name === name);
     let earned=0, spent=0, pending=0;
     mine.forEach(e => {
@@ -665,12 +739,20 @@ async function loadHistory() {
       if (t==="request" && s==="approved") spent += Math.abs(parseFloat(e.hours)||0);
       if (t==="request" && s==="pending") pending += Math.abs(parseFloat(e.hours)||0);
     });
+    // Fold in Redeem catalog spending — approved/fulfilled/returned all mean credits are committed
+    myRedeems.forEach(e => {
+      const s = (e.status||"").toLowerCase();
+      const cost = parseFloat(e.cost)||0;
+      if (s==="approved" || s==="fulfilled" || s==="returned") spent += cost;
+      if (s==="pending") pending += cost;
+    });
+ 
     document.getElementById("stat-earned").textContent = earned.toFixed(1);
     document.getElementById("stat-spent").textContent = spent.toFixed(1);
     document.getElementById("stat-balance").textContent = (earned-spent).toFixed(1);
     document.getElementById("stat-pending").textContent = pending.toFixed(1);
     document.getElementById("history-stats").style.display = "grid";
-
+ 
     const tbody = document.getElementById("history-tbody");
     tbody.innerHTML = mine.length ? mine.slice().reverse().map(e => `
       <tr>
@@ -686,14 +768,18 @@ async function loadHistory() {
   }
   document.getElementById("history-loader").style.display = "none";
 }
-
+ 
 // ─── LEADERBOARD ──────────────────────────────────────────────
 async function loadLeaderboard() {
   const lb = document.getElementById("lb-list");
   lb.innerHTML = `<div class="loader">Loading…</div>`;
   try {
-    const res = await fetch(`${SCRIPT_URL}?program=${getProgram()}`);
+    const [res, redeemRes] = await Promise.all([
+      fetch(`${SCRIPT_URL}?program=${getProgram()}`),
+      fetch(`${SCRIPT_URL}?action=redeemEntries&program=${getProgram()}`)
+    ]);
     const data = await res.json();
+    const redeemData = await redeemRes.json();
     const entries = data.entries || [];
     const totals = {};
     const balances = {};
@@ -705,6 +791,13 @@ async function loadLeaderboard() {
       const s = (e.status||"").toLowerCase();
       if (t==="work" && s!=="denied") { totals[n]+=h; balances[n]+=h; }
       if (t==="request" && s==="approved") balances[n]+=h;
+    });
+    (redeemData.entries || []).forEach(e => {
+      const n = e.name; if (!n) return;
+      if (!(n in balances)) balances[n]=0;
+      const s = (e.status||"").toLowerCase();
+      const cost = parseFloat(e.cost)||0;
+      if (s==="approved" || s==="fulfilled" || s==="returned") balances[n] -= cost;
     });
     const sorted = Object.entries(totals).sort((a,b)=>b[1]-a[1]);
     if (!sorted.length) { lb.innerHTML=`<div class="empty-note">No data yet.</div>`; return; }
@@ -722,7 +815,7 @@ async function loadLeaderboard() {
     lb.innerHTML = `<div class="empty-note">Error loading leaderboard.</div>`;
   }
 }
-
+ 
 // ─── ADMIN: Work / Request entries (unchanged) ────────────────
 async function loadAdmin() {
   document.getElementById("admin-pending").innerHTML = `<div class="loader">Loading…</div>`;
@@ -748,7 +841,7 @@ function renderAdmin() {
         <button class="btn-deny" onclick="handleApproval('${e.entryId}','deny')">✗ Deny</button>
       </div>
     </div>`).join("") : `<div class="empty-note">No pending requests.</div>`;
-
+ 
   const tbody = document.getElementById("admin-tbody");
   tbody.innerHTML = allEntries.slice().reverse().map(e => `
     <tr>
@@ -774,7 +867,7 @@ async function handleApproval(entryId, action) {
   } catch(e) { console.error("Approval error:", e); }
   renderAdmin();
 }
-
+ 
 // ─── ADMIN: Redeem catalog (NEW) ───────────────────────────────
 async function loadAdminRedeem() {
   document.getElementById("admin-redeem-pending").innerHTML = `<div class="loader">Loading…</div>`;
@@ -806,7 +899,7 @@ function renderAdminRedeem() {
         <button class="btn-deny" onclick="handleRedeemAction('${e.entryId}','redeemDeny')">✗ Deny</button>
       </div>
     </div>`).join("") : `<div class="empty-note">No pending redeem requests.</div>`;
-
+ 
   // Approved but not yet fulfilled, and fulfilled-shared awaiting return
   const active = allRedeemEntries.filter(e =>
     e.status === "approved" || (e.status === "fulfilled" && e.type === "Shared")
@@ -824,7 +917,7 @@ function renderAdminRedeem() {
         ${e.status === "fulfilled" && e.type === "Shared" ? `<button class="btn-return" onclick="handleRedeemReturn('${e.entryId}')">↩ Mark Returned</button>` : ""}
       </div>
     </div>`).join("") : `<div class="empty-note">Nothing awaiting fulfillment or return.</div>`;
-
+ 
   // All activity
   const tbody = document.getElementById("admin-redeem-tbody");
   tbody.innerHTML = allRedeemEntries.length ? allRedeemEntries.slice().reverse().map(e => `
@@ -861,7 +954,7 @@ async function handleRedeemReturn(entryId) {
   } catch(e) { console.error("Redeem return error:", e); }
   loadAdminRedeem();
 }
-
+ 
 // ─── HELPERS ──────────────────────────────────────────────────
 function fmtDate(ts) {
   if (!ts) return "—";
@@ -876,3 +969,6 @@ function statusLabel(s) {
 </script>
 </body>
 </html>
+ 
+
+
