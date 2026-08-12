@@ -371,7 +371,7 @@ tr:hover td { background: #f0fdf9; }
 </div><!-- end app-content -->
 
 <script>
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyWnf23kv98S8HME6H8u76FrMztNzLtRvuaSoEa-zmqipq6tRF5B9cNow6rAF6kC0k0/exec";
+const SCRIPT_URL = "PASTE_YOUR_NEW_DEPLOYMENT_URL_HERE";
 const MEMBER_PIN = "1249";
 const ADMIN_PIN = "9128";
 
@@ -659,9 +659,11 @@ async function loadHistory() {
     const mine = allEntries.filter(e => e.name === name);
     let earned=0, spent=0, pending=0;
     mine.forEach(e => {
-      if (e.type==="Work" && e.status!=="denied") earned += parseFloat(e.hours)||0;
-      if (e.type==="Request" && e.status==="approved") spent += Math.abs(parseFloat(e.hours)||0);
-      if (e.type==="Request" && e.status==="pending") pending += Math.abs(parseFloat(e.hours)||0);
+      const t = (e.type||"").toLowerCase();
+      const s = (e.status||"").toLowerCase();
+      if (t==="work" && s!=="denied") earned += parseFloat(e.hours)||0;
+      if (t==="request" && s==="approved") spent += Math.abs(parseFloat(e.hours)||0);
+      if (t==="request" && s==="pending") pending += Math.abs(parseFloat(e.hours)||0);
     });
     document.getElementById("stat-earned").textContent = earned.toFixed(1);
     document.getElementById("stat-spent").textContent = spent.toFixed(1);
@@ -672,7 +674,7 @@ async function loadHistory() {
     const tbody = document.getElementById("history-tbody");
     tbody.innerHTML = mine.length ? mine.slice().reverse().map(e => `
       <tr>
-        <td>${fmtDate(e.timestamp)}</td>
+        <td>${fmtDate(e.date || e.timestamp)}</td>
         <td><span class="badge badge-${(e.type||"work").toLowerCase()}">${e.type||"Work"}</span></td>
         <td title="${e.detail}">${truncate(e.detail,40)}</td>
         <td style="font-weight:600;color:${parseFloat(e.hours)>0?"var(--teal)":"var(--red)"}">${parseFloat(e.hours)>0?"+":""}${parseFloat(e.hours).toFixed(1)}</td>
@@ -699,8 +701,10 @@ async function loadLeaderboard() {
       const n = e.name; if (!n) return;
       if (!totals[n]) { totals[n]=0; balances[n]=0; }
       const h = parseFloat(e.hours)||0;
-      if (e.type==="Work" && e.status!=="denied") { totals[n]+=h; balances[n]+=h; }
-      if (e.type==="Request" && e.status==="approved") balances[n]+=h;
+      const t = (e.type||"").toLowerCase();
+      const s = (e.status||"").toLowerCase();
+      if (t==="work" && s!=="denied") { totals[n]+=h; balances[n]+=h; }
+      if (t==="request" && s==="approved") balances[n]+=h;
     });
     const sorted = Object.entries(totals).sort((a,b)=>b[1]-a[1]);
     if (!sorted.length) { lb.innerHTML=`<div class="empty-note">No data yet.</div>`; return; }
@@ -738,7 +742,7 @@ function renderAdmin() {
   pdiv.innerHTML = pending.length ? pending.map(e => `
     <div class="pending-card" id="acard-${e.entryId}">
       <div class="pname">${e.name}</div>
-      <div class="pdetail">Requests: ${e.detail} &nbsp;|&nbsp; ${Math.abs(parseFloat(e.hours)).toFixed(1)} hrs &nbsp;|&nbsp; ${fmtDate(e.timestamp)}</div>
+      <div class="pdetail">Requests: ${e.detail} &nbsp;|&nbsp; ${Math.abs(parseFloat(e.hours)).toFixed(1)} hrs &nbsp;|&nbsp; ${fmtDate(e.date || e.timestamp)}</div>
       <div class="pcard-actions">
         <button class="btn-approve" onclick="handleApproval('${e.entryId}','approve')">✓ Approve</button>
         <button class="btn-deny" onclick="handleApproval('${e.entryId}','deny')">✗ Deny</button>
@@ -748,7 +752,7 @@ function renderAdmin() {
   const tbody = document.getElementById("admin-tbody");
   tbody.innerHTML = allEntries.slice().reverse().map(e => `
     <tr>
-      <td>${fmtDate(e.timestamp)}</td>
+      <td>${fmtDate(e.date || e.timestamp)}</td>
       <td>${e.name}</td>
       <td><span class="badge badge-${(e.type||"work").toLowerCase()}">${e.type||"Work"}</span></td>
       <td title="${e.detail}">${truncate(e.detail,35)}</td>
