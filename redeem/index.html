@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YouthARE Timebank</title>
+<style>
+:root {
+  --teal: #0d9488;
+  --teal-dark: #0f766e;
+  --red: #dc2626;
+  --gold: #d97706;
+  --bg: #f0fdf9;
+  --card: #ffffff;
+  --border: #ccfbf1;
+  --text: #134e4a;
+  --muted: #6b7280;
+  --shadow: 0 2px 8px rgba(13,148,136,0.10);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+header { background: var(--teal); color: #fff; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; }
+header h1 { font-size: 1.25rem; font-weight: 700; letter-spacing: 0.02em; }
+header .subtitle { font-size: 0.78rem; opacity: 0.85; }
+#signout-btn { background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.4); color: #fff; border-radius: 6px; padding: 5px 12px; font-size: 0.82rem; cursor: pointer; display: none; }
+#signout-btn:hover { background: rgba(255,255,255,0.28); }
+
+#pin-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80vh; gap: 18px; padding: 24px; }
+.pin-card { background: var(--card); border-radius: 14px; box-shadow: var(--shadow); padding: 32px 28px; width: 100%; max-width: 340px; text-align: center; }
+.pin-card h2 { font-size: 1.2rem; color: var(--teal); margin-bottom: 6px; }
+.pin-card p { font-size: 0.85rem; color: var(--muted); margin-bottom: 18px; }
+.pin-input { width: 100%; border: 2px solid var(--border); border-radius: 8px; padding: 11px 14px; font-size: 1.1rem; text-align: center; letter-spacing: 0.2em; color: var(--text); outline: none; transition: border 0.2s; }
+.pin-input:focus { border-color: var(--teal); }
+.pin-btn { margin-top: 12px; width: 100%; background: var(--teal); color: #fff; border: none; border-radius: 8px; padding: 11px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+.pin-btn:hover { background: var(--teal-dark); }
+.pin-error { color: var(--red); font-size: 0.85rem; margin-top: 8px; min-height: 18px; }
+
+#program-bar { background: #fff; border-bottom: 2px solid var(--border); padding: 10px 12px; display: none; }
+#program-bar label { font-size: 0.82rem; font-weight: 600; color: var(--teal); margin-right: 8px; }
+#program-select { border: 1.5px solid var(--teal); border-radius: 7px; padding: 6px 10px; font-size: 0.9rem; color: var(--text); background: #fff; cursor: pointer; }
+
+#main-nav { background: #fff; border-bottom: 2px solid var(--border); display: none; overflow-x: auto; white-space: nowrap; }
+.nav-tab { display: inline-block; padding: 11px 18px; font-size: 0.88rem; font-weight: 600; color: var(--muted); cursor: pointer; border-bottom: 3px solid transparent; transition: color 0.2s, border-color 0.2s; }
+.nav-tab.active { color: var(--teal); border-bottom-color: var(--teal); }
+.nav-tab:hover:not(.active) { color: var(--text); }
+
+#app-content { display: none; padding: 16px; max-width: 700px; margin: 0 auto; }
+
+.card { background: var(--card); border-radius: 12px; box-shadow: var(--shadow); padding: 20px; margin-bottom: 16px; }
+.card h3 { font-size: 1rem; font-weight: 700; color: var(--teal); margin-bottom: 14px; }
+.form-group { margin-bottom: 13px; }
+.form-group label { display: block; font-size: 0.82rem; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+.form-group select, .form-group input, .form-group textarea {
+  width: 100%; border: 1.5px solid #d1fae5; border-radius: 7px; padding: 9px 12px; font-size: 0.92rem; color: var(--text); background: #fff; outline: none; transition: border 0.2s;
+}
+.form-group select:focus, .form-group input:focus, .form-group textarea:focus { border-color: var(--teal); }
+.form-group textarea { resize: vertical; min-height: 70px; }
+.form-hint { font-size: 0.76rem; color: var(--muted); margin-top: 3px; }
+.submit-btn { background: var(--teal); color: #fff; border: none; border-radius: 8px; padding: 11px 22px; font-size: 0.95rem; font-weight: 700; cursor: pointer; width: 100%; margin-top: 4px; transition: background 0.2s; }
+.submit-btn:hover { background: var(--teal-dark); }
+.submit-msg { text-align: center; font-size: 0.88rem; color: var(--teal); margin-top: 8px; min-height: 20px; font-weight: 600; }
+
+.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
+.stat-box { background: var(--card); border-radius: 10px; box-shadow: var(--shadow); padding: 13px 8px; text-align: center; }
+.stat-box .val { font-size: 1.5rem; font-weight: 800; color: var(--teal); }
+.stat-box .lbl { font-size: 0.7rem; color: var(--muted); margin-top: 2px; font-weight: 600; text-transform: uppercase; }
+
+.tbl-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+th { background: #f0fdf9; color: var(--teal); font-weight: 700; text-align: left; padding: 8px 10px; border-bottom: 2px solid var(--border); }
+td { padding: 8px 10px; border-bottom: 1px solid #f0fdf4; vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #f0fdf9; }
+
+.badge { display: inline-block; border-radius: 5px; padding: 2px 8px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+.badge-approved { background: #d1fae5; color: #065f46; }
+.badge-pending { background: #fef3c7; color: #92400e; }
+.badge-denied { background: #fee2e2; color: #991b1b; }
+.badge-fulfilled { background: #dbeafe; color: #1e40af; }
+.badge-returned { background: #e0e7ff; color: #3730a3; }
+.badge-work { background: #e0f2fe; color: #0369a1; }
+.badge-request { background: #fce7f3; color: #9d174d; }
+
+.lb-row { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 9px; margin-bottom: 8px; background: var(--bg); }
+.lb-rank { font-size: 1.1rem; font-weight: 800; color: var(--teal); min-width: 28px; }
+.lb-rank.gold { color: #d97706; }
+.lb-rank.silver { color: #6b7280; }
+.lb-rank.bronze { color: #b45309; }
+.lb-name { flex: 1; font-weight: 600; font-size: 0.95rem; }
+.lb-hrs { font-size: 1rem; font-weight: 800; color: var(--teal); }
+.lb-bal { font-size: 0.78rem; color: var(--muted); margin-left: 4px; }
+
+.admin-section { margin-bottom: 20px; }
+.admin-section h4 { font-size: 0.9rem; font-weight: 700; color: var(--teal); margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+.pending-card { background: #fffbeb; border: 1px solid #fde68a; border-radius: 9px; padding: 13px 15px; margin-bottom: 10px; }
+.pending-card.redeem { background: #f0f9ff; border-color: #bae6fd; }
+.pending-card .pname { font-weight: 700; font-size: 0.95rem; }
+.pending-card .pdetail { font-size: 0.83rem; color: var(--muted); margin: 4px 0 10px; }
+.pcard-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn-approve { background: #10b981; color: #fff; border: none; border-radius: 6px; padding: 6px 15px; font-size: 0.82rem; font-weight: 700; cursor: pointer; }
+.btn-approve:hover { background: #059669; }
+.btn-deny { background: #ef4444; color: #fff; border: none; border-radius: 6px; padding: 6px 15px; font-size: 0.82rem; font-weight: 700; cursor: pointer; }
+.btn-deny:hover { background: #dc2626; }
+.btn-fulfill { background: #0284c7; color: #fff; border: none; border-radius: 6px; padding: 6px 15px; font-size: 0.82rem; font-weight: 700; cursor: pointer; }
+.btn-fulfill:hover { background: #0369a1; }
+.btn-return { background: #6366f1; color: #fff; border: none; border-radius: 6px; padding: 6px 15px; font-size: 0.82rem; font-weight: 700; cursor: pointer; }
+.btn-return:hover { background: #4f46e5; }
+.empty-note { text-align: center; color: var(--muted); font-size: 0.87rem; padding: 18px 0; }
+
+.type-toggle { display: flex; gap: 8px; margin-bottom: 14px; }
+.type-btn { flex: 1; padding: 9px; border-radius: 8px; border: 2px solid var(--border); background: #fff; font-weight: 700; font-size: 0.88rem; cursor: pointer; transition: all 0.2s; color: var(--muted); }
+.type-btn.active { border-color: var(--teal); background: var(--teal); color: #fff; }
+
+.cost-display { background: var(--bg); border: 1.5px dashed var(--teal); border-radius: 8px; padding: 10px 14px; text-align: center; font-weight: 700; color: var(--teal); margin-bottom: 13px; }
+
+.loader { text-align: center; color: var(--muted); font-size: 0.87rem; padding: 20px; }
+
+@media (max-width: 480px) {
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+  .nav-tab { padding: 10px 12px; font-size: 0.82rem; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="subtitle">YouthARE</div>
+    <h1>⏱ Timebank</h1>
+  </div>
+  <button id="signout-btn" onclick="signOut()">Sign Out</button>
+</header>
+
+<!-- PIN SCREEN -->
+<div id="pin-screen">
+  <div class="pin-card">
+    <h2>Welcome</h2>
+    <p>Enter your PIN to continue</p>
+    <select id="pin-program-select" class="pin-input" style="letter-spacing:normal; margin-bottom:12px;">
+      <option value="">— Select your program —</option>
+      <option value="JLS">JLS</option>
+      <option value="KYTI">KYTI</option>
+      <option value="Kenya">Kenya</option>
+      <option value="CAYEO">CAYEO</option>
+      <option value="Moshi">Moshi</option>
+      <option value="BPS7">BPS7</option>
+      <option value="BPS6">BPS6</option>
+      <option value="BPS5">BPS5</option>
+      <option value="BPS4">BPS4</option>
+      <option value="BPS3">BPS3</option>
+    </select>
+    <input type="password" id="pin-input" class="pin-input" placeholder="Enter PIN" maxlength="8" inputmode="numeric" />
+    <div class="pin-error" id="pin-error"></div>
+    <button class="pin-btn" onclick="checkPin()">Enter</button>
+  </div>
+</div>
+
+<!-- PROGRAM BAR (admin only) -->
+<div id="program-bar">
+  <label for="program-select">Program:</label>
+  <select id="program-select" onchange="onProgramChange()">
+    <option value="JLS">JLS</option>
+    <option value="KYTI">KYTI</option>
+    <option value="Kenya">Kenya</option>
+    <option value="CAYEO">CAYEO</option>
+    <option value="Moshi">Moshi</option>
+    <option value="BPS7">BPS7</option>
+    <option value="BPS6">BPS6</option>
+    <option value="BPS5">BPS5</option>
+    <option value="BPS4">BPS4</option>
+    <option value="BPS3">BPS3</option>
+  </select>
+</div>
+
+<!-- MAIN NAV -->
+<div id="main-nav">
+  <span class="nav-tab active" onclick="showTab('give-get')">Give &amp; Get</span>
+  <span class="nav-tab" onclick="showTab('my-history')">My Hours</span>
+  <span class="nav-tab" onclick="showTab('redeem')">Redeem</span>
+  <span class="nav-tab" onclick="showTab('leaderboard')">Leaderboard</span>
+  <span class="nav-tab admin-only" onclick="showTab('admin')" style="display:none">Admin</span>
+</div>
+
+<!-- APP CONTENT -->
+<div id="app-content">
+
+  <!-- GIVE & GET TAB -->
+  <div id="tab-give-get">
+    <div class="card">
+      <h3>Log Activity</h3>
+      <div class="type-toggle">
+        <button class="type-btn active" id="btn-work" onclick="setType('Work')">🛠 Log Work Hours</button>
+        <button class="type-btn" id="btn-request" onclick="setType('Request')">🎁 Request Item</button>
+      </div>
+      <div class="form-group">
+        <label>Your Name</label>
+        <select id="member-name">
+          <option value="">Loading names…</option>
+        </select>
+      </div>
+      <div id="work-fields">
+        <div class="form-group">
+          <label>Hours Worked</label>
+          <select id="hours-worked">
+            <option value="0.5">0.5 hrs</option>
+            <option value="1">1 hr</option>
+            <option value="1.5">1.5 hrs</option>
+            <option value="2">2 hrs</option>
+            <option value="2.5">2.5 hrs</option>
+            <option value="3">3 hrs</option>
+            <option value="3.5">3.5 hrs</option>
+            <option value="4">4 hrs</option>
+            <option value="4.5">4.5 hrs</option>
+            <option value="5">5 hrs</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Activity Description</label>
+          <textarea id="work-detail" placeholder="What did you work on?"></textarea>
+        </div>
+      </div>
+      <div id="request-fields" style="display:none">
+        <div class="form-group">
+          <label>Item / Resource Requested</label>
+          <input type="text" id="request-item" placeholder="What are you requesting?" />
+        </div>
+        <div class="form-group">
+          <label>Hours to Spend</label>
+          <select id="hours-request">
+            <option value="1">1 hr</option>
+            <option value="2">2 hrs</option>
+            <option value="3">3 hrs</option>
+            <option value="4">4 hrs</option>
+            <option value="5">5 hrs</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Notes (optional)</label>
+          <textarea id="request-notes" placeholder="Any details about your request?"></textarea>
+        </div>
+      </div>
+      <button class="submit-btn" onclick="submitEntry()">Submit</button>
+      <div class="submit-msg" id="submit-msg"></div>
+    </div>
+  </div>
+
+  <!-- MY HISTORY TAB -->
+  <div id="tab-my-history" style="display:none">
+    <div class="form-group" style="margin-bottom:14px;">
+      <label style="font-size:0.82rem;font-weight:600;color:var(--teal);">View member:</label>
+      <select id="history-name" onchange="loadHistory()">
+        <option value="">— Select name —</option>
+      </select>
+    </div>
+    <div class="stats-row" id="history-stats" style="display:none">
+      <div class="stat-box"><div class="val" id="stat-earned">0</div><div class="lbl">Earned</div></div>
+      <div class="stat-box"><div class="val" id="stat-spent">0</div><div class="lbl">Spent</div></div>
+      <div class="stat-box"><div class="val" id="stat-balance">0</div><div class="lbl">Balance</div></div>
+      <div class="stat-box"><div class="val" id="stat-pending">0</div><div class="lbl">Pending</div></div>
+    </div>
+    <div class="card" id="history-table-card" style="display:none">
+      <h3>Activity History</h3>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Date</th><th>Type</th><th>Detail</th><th>Hrs</th><th>Status</th></tr></thead>
+          <tbody id="history-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="loader" id="history-loader" style="display:none">Loading…</div>
+  </div>
+
+  <!-- REDEEM TAB (NEW) -->
+  <div id="tab-redeem" style="display:none">
+    <div class="card">
+      <h3>🎁 Redeem Credits</h3>
+      <div class="form-group">
+        <label>Your Name</label>
+        <select id="redeem-name">
+          <option value="">Loading names…</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Category</label>
+        <select id="redeem-category" onchange="onRedeemCategoryChange()">
+          <option value="">— Select a category —</option>
+          <option value="Book">📚 Book</option>
+          <option value="Game">🎲 Game</option>
+          <option value="Sports Gear">⚽ Sports Gear</option>
+          <option value="Clothing">👕 Clothing</option>
+          <option value="Art & School Supplies">🎨 Art &amp; School Supplies</option>
+          <option value="Tool">🔧 Tool</option>
+          <option value="Shared Resource">🚲 Shared Resource (bike, monitor, machine — per day)</option>
+          <option value="Service">🤝 Service (tutoring, coaching, transportation, etc.)</option>
+        </select>
+      </div>
+      <div class="cost-display" id="redeem-cost-display" style="display:none"></div>
+      <div class="form-group" id="redeem-item-group" style="display:none">
+        <label id="redeem-item-label">What are you requesting?</label>
+        <input type="text" id="redeem-item" placeholder="Be specific — e.g. 'used soccer cleats, size 6'" />
+      </div>
+      <div class="form-group" id="redeem-returnby-group" style="display:none">
+        <label>Needed until (return-by date)</label>
+        <input type="date" id="redeem-returnby" />
+        <div class="form-hint">Shared items get checked back in — this just helps everyone plan.</div>
+      </div>
+      <div class="form-group" id="redeem-scheduled-group" style="display:none">
+        <label>Preferred date / time</label>
+        <input type="text" id="redeem-scheduled" placeholder="e.g. 'Tuesdays after school' or a specific date" />
+      </div>
+      <div class="form-group" id="redeem-notes-group" style="display:none">
+        <label>Notes (optional)</label>
+        <textarea id="redeem-notes" placeholder="Anything else that would help a coordinator fulfill this?"></textarea>
+      </div>
+      <button class="submit-btn" id="redeem-submit-btn" style="display:none" onclick="submitRedeem()">Submit Request</button>
+      <div class="submit-msg" id="redeem-msg"></div>
+    </div>
+
+    <div class="card">
+      <h3>My Redeem Requests</h3>
+      <div id="redeem-my-list"><div class="empty-note">Select your name above to see your requests.</div></div>
+    </div>
+  </div>
+
+  <!-- LEADERBOARD TAB -->
+  <div id="tab-leaderboard" style="display:none">
+    <div class="card">
+      <h3>🏆 Leaderboard — Total Hours Earned</h3>
+      <div id="lb-list"><div class="loader">Loading…</div></div>
+    </div>
+  </div>
+
+  <!-- ADMIN TAB -->
+  <div id="tab-admin" style="display:none">
+    <div class="card">
+      <div class="admin-section">
+        <h4>⏳ Pending Hour Requests</h4>
+        <div id="admin-pending"><div class="loader">Loading…</div></div>
+      </div>
+      <div class="admin-section">
+        <h4>📋 All Activity</h4>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Date</th><th>Name</th><th>Type</th><th>Detail</th><th>Hrs</th><th>Status</th></tr></thead>
+            <tbody id="admin-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="admin-section">
+        <h4>🎁 Pending Redeem Requests</h4>
+        <div id="admin-redeem-pending"><div class="loader">Loading…</div></div>
+      </div>
+      <div class="admin-section">
+        <h4>📦 Approved — Awaiting Fulfillment / Return</h4>
+        <div id="admin-redeem-active"><div class="loader">Loading…</div></div>
+      </div>
+      <div class="admin-section">
+        <h4>📋 All Redeem Activity</h4>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Date</th><th>Name</th><th>Category</th><th>Item</th><th>Cr</th><th>Status</th></tr></thead>
+            <tbody id="admin-redeem-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end app-content -->
+
+<script>
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby1wjK0MR6ow_Sh9h-AnzZQVgDJMFMlmNy2I_STm_e2ElqYDKzCwwRJSw-QQDP_BWRXMA/exec";
+const MEMBER_PIN = "1249";
+const ADMIN_PIN = "9128";
+
+const CATEGORY_COST = {
+  "Book": 2, "Game": 3, "Sports Gear": 4, "Clothing": 4,
+  "Art & School Supplies": 5, "Tool": 5, "Shared Resource": 5, "Service": 1
+};
+const CATEGORY_TYPE = {
+  "Book": "Individual", "Game": "Individual", "Sports Gear": "Individual", "Clothing": "Individual",
+  "Art & School Supplies": "Individual", "Tool": "Individual",
+  "Shared Resource": "Shared", "Service": "Service"
+};
+
+let isAdmin = false;
+let currentProgram = "";
+let currentUser = "";
+let allEntries = [];
+let allRedeemEntries = [];
+let entryType = "Work";
+
+// ─── PIN / AUTH ───────────────────────────────────────────────
+function checkPin() {
+  const prog = document.getElementById("pin-program-select").value;
+  const pin = document.getElementById("pin-input").value.trim();
+  const err = document.getElementById("pin-error");
+  if (!prog) { err.textContent = "Please select your program."; return; }
+  if (pin === ADMIN_PIN) {
+    isAdmin = true; currentProgram = prog; launchApp();
+  } else if (pin === MEMBER_PIN) {
+    isAdmin = false; currentProgram = prog; launchApp();
+  } else {
+    err.textContent = "Incorrect PIN. Please try again.";
+    document.getElementById("pin-input").value = "";
+  }
+}
+document.getElementById("pin-input").addEventListener("keydown", e => { if (e.key === "Enter") checkPin(); });
+
+function launchApp() {
+  document.getElementById("pin-screen").style.display = "none";
+  document.getElementById("signout-btn").style.display = "inline-block";
+  if (isAdmin) {
+    document.getElementById("program-bar").style.display = "block";
+    document.getElementById("program-select").value = currentProgram;
+    document.querySelectorAll(".admin-only").forEach(el => el.style.display = "inline-block");
+  }
+  document.getElementById("main-nav").style.display = "block";
+  document.getElementById("app-content").style.display = "block";
+  loadNames();
+  showTab("give-get");
+}
+
+function signOut() {
+  isAdmin = false; currentProgram = ""; currentUser = ""; allEntries = []; allRedeemEntries = [];
+  document.getElementById("pin-screen").style.display = "flex";
+  document.getElementById("program-bar").style.display = "none";
+  document.getElementById("main-nav").style.display = "none";
+  document.getElementById("app-content").style.display = "none";
+  document.getElementById("signout-btn").style.display = "none";
+  document.getElementById("pin-input").value = "";
+  document.getElementById("pin-error").textContent = "";
+  document.getElementById("pin-program-select").value = "";
+  document.querySelectorAll(".admin-only").forEach(el => el.style.display = "none");
+}
+
+// ─── PROGRAM CHANGE (admin) ───────────────────────────────────
+function getProgram() {
+  return isAdmin ? document.getElementById("program-select").value : currentProgram;
+}
+function onProgramChange() {
+  currentProgram = document.getElementById("program-select").value;
+  loadNames();
+  const active = document.querySelector(".nav-tab.active");
+  if (active) showTab(active.dataset.tab || "give-get");
+}
+
+// ─── NAVIGATION ───────────────────────────────────────────────
+function showTab(tab) {
+  ["give-get","my-history","redeem","leaderboard","admin"].forEach(t => {
+    document.getElementById("tab-"+t).style.display = (t===tab) ? "block" : "none";
+  });
+  document.querySelectorAll(".nav-tab").forEach(el => {
+    el.classList.toggle("active", el.textContent.trim().toLowerCase().replace(/[^a-z]/g,"").includes(tab.replace("-","")));
+  });
+  if (tab==="leaderboard") loadLeaderboard();
+  if (tab==="admin") { loadAdmin(); loadAdminRedeem(); }
+  if (tab==="my-history") { loadHistoryNames(); }
+  if (tab==="redeem") { loadRedeemNames(); }
+}
+
+// ─── NAMES ────────────────────────────────────────────────────
+async function loadNames() {
+  const prog = getProgram();
+  const sel = document.getElementById("member-name");
+  sel.innerHTML = "<option>Loading…</option>";
+  try {
+    const res = await fetch(`${SCRIPT_URL}?action=names&program=${prog}`);
+    const data = await res.json();
+    const names = data.names || [];
+    sel.innerHTML = names.length
+      ? `<option value="">— Select your name —</option>` + names.map(n=>`<option value="${n}">${n}</option>`).join("")
+      : `<option value="">No names found</option>`;
+  } catch(e) {
+    sel.innerHTML = "<option>Error loading names</option>";
+  }
+}
+async function loadHistoryNames() {
+  const prog = getProgram();
+  const sel = document.getElementById("history-name");
+  try {
+    const res = await fetch(`${SCRIPT_URL}?action=names&program=${prog}`);
+    const data = await res.json();
+    const names = data.names || [];
+    sel.innerHTML = `<option value="">— Select name —</option>` + names.map(n=>`<option value="${n}">${n}</option>`).join("");
+  } catch(e) {}
+}
+async function loadRedeemNames() {
+  const prog = getProgram();
+  const sel = document.getElementById("redeem-name");
+  try {
+    const res = await fetch(`${SCRIPT_URL}?action=names&program=${prog}`);
+    const data = await res.json();
+    const names = data.names || [];
+    sel.innerHTML = `<option value="">— Select your name —</option>` + names.map(n=>`<option value="${n}">${n}</option>`).join("");
+  } catch(e) {}
+  document.getElementById("redeem-my-list").innerHTML = `<div class="empty-note">Select your name above to see your requests.</div>`;
+}
+
+// ─── ENTRY TYPE TOGGLE (Give & Get) ───────────────────────────
+function setType(t) {
+  entryType = t;
+  document.getElementById("work-fields").style.display = (t==="Work") ? "block" : "none";
+  document.getElementById("request-fields").style.display = (t==="Request") ? "block" : "none";
+  document.getElementById("btn-work").classList.toggle("active", t==="Work");
+  document.getElementById("btn-request").classList.toggle("active", t==="Request");
+}
+
+// ─── SUBMIT ENTRY (Give & Get) ─────────────────────────────────
+async function submitEntry() {
+  const name = document.getElementById("member-name").value;
+  const msg = document.getElementById("submit-msg");
+  if (!name) { msg.textContent = "Please select your name."; msg.style.color="var(--red)"; return; }
+
+  let detail, hours;
+  if (entryType === "Work") {
+    detail = document.getElementById("work-detail").value.trim();
+    hours = parseFloat(document.getElementById("hours-worked").value);
+    if (!detail) { msg.textContent = "Please describe the activity."; msg.style.color="var(--red)"; return; }
+  } else {
+    const item = document.getElementById("request-item").value.trim();
+    const notes = document.getElementById("request-notes").value.trim();
+    hours = -parseFloat(document.getElementById("hours-request").value);
+    detail = item + (notes ? ` — ${notes}` : "");
+    if (!item) { msg.textContent = "Please enter what you're requesting."; msg.style.color="var(--red)"; return; }
+  }
+
+  msg.textContent = "Submitting…"; msg.style.color = "var(--teal)";
+  try {
+    await fetch(SCRIPT_URL, {
+      method:"POST", mode:"no-cors",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ action:"submit", program:getProgram(), name, type:entryType, detail, hours })
+    });
+    msg.textContent = "✓ Submitted successfully!"; msg.style.color="var(--teal)";
+    document.getElementById("work-detail").value = "";
+    document.getElementById("request-item").value = "";
+    document.getElementById("request-notes").value = "";
+  } catch(e) {
+    msg.textContent = "Error submitting. Please try again."; msg.style.color="var(--red)";
+  }
+  setTimeout(()=>{ msg.textContent=""; }, 4000);
+}
+
+// ─── REDEEM: category → cost + conditional fields ─────────────
+function onRedeemCategoryChange() {
+  const cat = document.getElementById("redeem-category").value;
+  const costDisplay = document.getElementById("redeem-cost-display");
+  const itemGroup = document.getElementById("redeem-item-group");
+  const itemLabel = document.getElementById("redeem-item-label");
+  const returnByGroup = document.getElementById("redeem-returnby-group");
+  const scheduledGroup = document.getElementById("redeem-scheduled-group");
+  const notesGroup = document.getElementById("redeem-notes-group");
+  const submitBtn = document.getElementById("redeem-submit-btn");
+
+  if (!cat) {
+    costDisplay.style.display = "none";
+    itemGroup.style.display = "none";
+    returnByGroup.style.display = "none";
+    scheduledGroup.style.display = "none";
+    notesGroup.style.display = "none";
+    submitBtn.style.display = "none";
+    return;
+  }
+
+  const cost = CATEGORY_COST[cat];
+  const type = CATEGORY_TYPE[cat];
+  costDisplay.style.display = "block";
+  costDisplay.textContent = type === "Shared"
+    ? `${cost} credits per day`
+    : `${cost} credit${cost>1?"s":""}`;
+
+  itemGroup.style.display = "block";
+  itemLabel.textContent = type === "Service" ? "What service do you need?" : "What are you requesting?";
+  document.getElementById("redeem-item").placeholder = type === "Service"
+    ? "e.g. 'help with algebra homework'"
+    : "Be specific — e.g. 'used soccer cleats, size 6'";
+
+  returnByGroup.style.display = (type === "Shared") ? "block" : "none";
+  scheduledGroup.style.display = (type === "Service") ? "block" : "none";
+  notesGroup.style.display = "block";
+  submitBtn.style.display = "block";
+}
+
+// ─── REDEEM: submit request ────────────────────────────────────
+async function submitRedeem() {
+  const name = document.getElementById("redeem-name").value;
+  const category = document.getElementById("redeem-category").value;
+  const item = document.getElementById("redeem-item").value.trim();
+  const returnBy = document.getElementById("redeem-returnby").value;
+  const scheduledDate = document.getElementById("redeem-scheduled").value.trim();
+  const notes = document.getElementById("redeem-notes").value.trim();
+  const msg = document.getElementById("redeem-msg");
+
+  if (!name) { msg.textContent = "Please select your name."; msg.style.color="var(--red)"; return; }
+  if (!category) { msg.textContent = "Please select a category."; msg.style.color="var(--red)"; return; }
+  if (!item) { msg.textContent = "Please describe what you're requesting."; msg.style.color="var(--red)"; return; }
+
+  msg.textContent = "Submitting…"; msg.style.color = "var(--teal)";
+  try {
+    await fetch(SCRIPT_URL, {
+      method:"POST", mode:"no-cors",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({
+        action:"redeemSubmit", program:getProgram(), name, category, item,
+        returnBy, scheduledDate, notes
+      })
+    });
+    msg.textContent = "✓ Request submitted! A coordinator will follow up."; msg.style.color="var(--teal)";
+    document.getElementById("redeem-category").value = "";
+    document.getElementById("redeem-item").value = "";
+    document.getElementById("redeem-returnby").value = "";
+    document.getElementById("redeem-scheduled").value = "";
+    document.getElementById("redeem-notes").value = "";
+    onRedeemCategoryChange();
+    loadMyRedeemRequests(name);
+  } catch(e) {
+    msg.textContent = "Error submitting. Please try again."; msg.style.color="var(--red)";
+  }
+  setTimeout(()=>{ msg.textContent=""; }, 5000);
+}
+
+document.getElementById("redeem-name").addEventListener("change", function() {
+  if (this.value) loadMyRedeemRequests(this.value);
+});
+
+async function loadMyRedeemRequests(name) {
+  const list = document.getElementById("redeem-my-list");
+  list.innerHTML = `<div class="loader">Loading…</div>`;
+  try {
+    const res = await fetch(`${SCRIPT_URL}?action=redeemEntries&program=${getProgram()}`);
+    const data = await res.json();
+    const mine = (data.entries || []).filter(e => e.name === name).reverse();
+    list.innerHTML = mine.length ? mine.map(e => `
+      <div class="pending-card redeem">
+        <div class="pname">${e.category} — ${e.item}</div>
+        <div class="pdetail">${e.cost} credit${e.cost>1?"s":""} &nbsp;|&nbsp; ${fmtDate(e.date)} &nbsp;|&nbsp;
+          <span class="badge badge-${e.status}">${statusLabel(e.status)}</span>
+        </div>
+      </div>`).join("") : `<div class="empty-note">No redeem requests yet.</div>`;
+  } catch(e) {
+    list.innerHTML = `<div class="empty-note">Error loading requests.</div>`;
+  }
+}
+
+// ─── MY HISTORY ───────────────────────────────────────────────
+async function loadHistory() {
+  const name = document.getElementById("history-name").value;
+  if (!name) return;
+  document.getElementById("history-stats").style.display = "none";
+  document.getElementById("history-table-card").style.display = "none";
+  document.getElementById("history-loader").style.display = "block";
+  try {
+    const res = await fetch(`${SCRIPT_URL}?program=${getProgram()}`);
+    const data = await res.json();
+    allEntries = data.entries || [];
+    const mine = allEntries.filter(e => e.name === name);
+    let earned=0, spent=0, pending=0;
+    mine.forEach(e => {
+      if (e.type==="Work" && e.status!=="denied") earned += parseFloat(e.hours)||0;
+      if (e.type==="Request" && e.status==="approved") spent += Math.abs(parseFloat(e.hours)||0);
+      if (e.type==="Request" && e.status==="pending") pending += Math.abs(parseFloat(e.hours)||0);
+    });
+    document.getElementById("stat-earned").textContent = earned.toFixed(1);
+    document.getElementById("stat-spent").textContent = spent.toFixed(1);
+    document.getElementById("stat-balance").textContent = (earned-spent).toFixed(1);
+    document.getElementById("stat-pending").textContent = pending.toFixed(1);
+    document.getElementById("history-stats").style.display = "grid";
+
+    const tbody = document.getElementById("history-tbody");
+    tbody.innerHTML = mine.length ? mine.slice().reverse().map(e => `
+      <tr>
+        <td>${fmtDate(e.timestamp)}</td>
+        <td><span class="badge badge-${(e.type||"work").toLowerCase()}">${e.type||"Work"}</span></td>
+        <td title="${e.detail}">${truncate(e.detail,40)}</td>
+        <td style="font-weight:600;color:${parseFloat(e.hours)>0?"var(--teal)":"var(--red)"}">${parseFloat(e.hours)>0?"+":""}${parseFloat(e.hours).toFixed(1)}</td>
+        <td><span class="badge badge-${e.status||"approved"}">${statusLabel(e.status)}</span></td>
+      </tr>`).join("") : `<tr><td colspan="5" class="empty-note">No activity yet.</td></tr>`;
+    document.getElementById("history-table-card").style.display = "block";
+  } catch(err) {
+    console.error(err);
+  }
+  document.getElementById("history-loader").style.display = "none";
+}
+
+// ─── LEADERBOARD ──────────────────────────────────────────────
+async function loadLeaderboard() {
+  const lb = document.getElementById("lb-list");
+  lb.innerHTML = `<div class="loader">Loading…</div>`;
+  try {
+    const res = await fetch(`${SCRIPT_URL}?program=${getProgram()}`);
+    const data = await res.json();
+    const entries = data.entries || [];
+    const totals = {};
+    const balances = {};
+    entries.forEach(e => {
+      const n = e.name; if (!n) return;
+      if (!totals[n]) { totals[n]=0; balances[n]=0; }
+      const h = parseFloat(e.hours)||0;
+      if (e.type==="Work" && e.status!=="denied") { totals[n]+=h; balances[n]+=h; }
+      if (e.type==="Request" && e.status==="approved") balances[n]+=h;
+    });
+    const sorted = Object.entries(totals).sort((a,b)=>b[1]-a[1]);
+    if (!sorted.length) { lb.innerHTML=`<div class="empty-note">No data yet.</div>`; return; }
+    lb.innerHTML = sorted.map(([name, earned], i) => {
+      const rankClass = i===0?"gold":i===1?"silver":i===2?"bronze":"";
+      const medal = i===0?"🥇":i===1?"🥈":i===2?"🥉":"";
+      return `<div class="lb-row">
+        <div class="lb-rank ${rankClass}">${medal||("#"+(i+1))}</div>
+        <div class="lb-name">${name}</div>
+        <div><span class="lb-hrs">${earned.toFixed(1)} hrs</span>
+        <span class="lb-bal">bal: ${(balances[name]||0).toFixed(1)}</span></div>
+      </div>`;
+    }).join("");
+  } catch(e) {
+    lb.innerHTML = `<div class="empty-note">Error loading leaderboard.</div>`;
+  }
+}
+
+// ─── ADMIN: Work / Request entries (unchanged) ────────────────
+async function loadAdmin() {
+  document.getElementById("admin-pending").innerHTML = `<div class="loader">Loading…</div>`;
+  document.getElementById("admin-tbody").innerHTML = "";
+  try {
+    const res = await fetch(`${SCRIPT_URL}?program=${getProgram()}`);
+    const data = await res.json();
+    allEntries = data.entries || [];
+    renderAdmin();
+  } catch(e) {
+    document.getElementById("admin-pending").innerHTML = `<div class="empty-note">Error loading data.</div>`;
+  }
+}
+function renderAdmin() {
+  const pending = allEntries.filter(e => e.status==="pending");
+  const pdiv = document.getElementById("admin-pending");
+  pdiv.innerHTML = pending.length ? pending.map(e => `
+    <div class="pending-card" id="acard-${e.entryId}">
+      <div class="pname">${e.name}</div>
+      <div class="pdetail">Requests: ${e.detail} &nbsp;|&nbsp; ${Math.abs(parseFloat(e.hours)).toFixed(1)} hrs &nbsp;|&nbsp; ${fmtDate(e.timestamp)}</div>
+      <div class="pcard-actions">
+        <button class="btn-approve" onclick="handleApproval('${e.entryId}','approve')">✓ Approve</button>
+        <button class="btn-deny" onclick="handleApproval('${e.entryId}','deny')">✗ Deny</button>
+      </div>
+    </div>`).join("") : `<div class="empty-note">No pending requests.</div>`;
+
+  const tbody = document.getElementById("admin-tbody");
+  tbody.innerHTML = allEntries.slice().reverse().map(e => `
+    <tr>
+      <td>${fmtDate(e.timestamp)}</td>
+      <td>${e.name}</td>
+      <td><span class="badge badge-${(e.type||"work").toLowerCase()}">${e.type||"Work"}</span></td>
+      <td title="${e.detail}">${truncate(e.detail,35)}</td>
+      <td style="font-weight:600;color:${parseFloat(e.hours)>0?"var(--teal)":"var(--red)"}">${parseFloat(e.hours)>0?"+":""}${parseFloat(e.hours).toFixed(1)}</td>
+      <td><span class="badge badge-${e.status||"approved"}">${statusLabel(e.status)}</span></td>
+    </tr>`).join("");
+}
+async function handleApproval(entryId, action) {
+  const card = document.getElementById("acard-"+entryId);
+  if (card) { card.style.opacity="0.5"; card.querySelectorAll("button").forEach(b=>b.disabled=true); }
+  try {
+    await fetch(SCRIPT_URL, {
+      method:"POST", mode:"no-cors",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ action, program:getProgram(), entryId })
+    });
+    const entry = allEntries.find(e=>e.entryId===entryId);
+    if (entry) entry.status = action==="approve" ? "approved" : "denied";
+  } catch(e) { console.error("Approval error:", e); }
+  renderAdmin();
+}
+
+// ─── ADMIN: Redeem catalog (NEW) ───────────────────────────────
+async function loadAdminRedeem() {
+  document.getElementById("admin-redeem-pending").innerHTML = `<div class="loader">Loading…</div>`;
+  document.getElementById("admin-redeem-active").innerHTML = `<div class="loader">Loading…</div>`;
+  document.getElementById("admin-redeem-tbody").innerHTML = "";
+  try {
+    const res = await fetch(`${SCRIPT_URL}?action=redeemEntries&program=${getProgram()}`);
+    const data = await res.json();
+    allRedeemEntries = data.entries || [];
+    renderAdminRedeem();
+  } catch(e) {
+    document.getElementById("admin-redeem-pending").innerHTML = `<div class="empty-note">Error loading data.</div>`;
+  }
+}
+function renderAdminRedeem() {
+  // Pending
+  const pending = allRedeemEntries.filter(e => e.status==="pending");
+  const pdiv = document.getElementById("admin-redeem-pending");
+  pdiv.innerHTML = pending.length ? pending.map(e => `
+    <div class="pending-card redeem" id="rcard-${e.entryId}">
+      <div class="pname">${e.name} — ${e.category}</div>
+      <div class="pdetail">${e.item} &nbsp;|&nbsp; ${e.cost} credit${e.cost>1?"s":""} &nbsp;|&nbsp; ${fmtDate(e.date)}
+        ${e.returnBy ? `<br>Needed until: ${e.returnBy}` : ""}
+        ${e.scheduledDate ? `<br>Preferred: ${e.scheduledDate}` : ""}
+        ${e.notes ? `<br>Notes: ${e.notes}` : ""}
+      </div>
+      <div class="pcard-actions">
+        <button class="btn-approve" onclick="handleRedeemAction('${e.entryId}','redeemApprove')">✓ Approve</button>
+        <button class="btn-deny" onclick="handleRedeemAction('${e.entryId}','redeemDeny')">✗ Deny</button>
+      </div>
+    </div>`).join("") : `<div class="empty-note">No pending redeem requests.</div>`;
+
+  // Approved but not yet fulfilled, and fulfilled-shared awaiting return
+  const active = allRedeemEntries.filter(e =>
+    e.status === "approved" || (e.status === "fulfilled" && e.type === "Shared")
+  );
+  const adiv = document.getElementById("admin-redeem-active");
+  adiv.innerHTML = active.length ? active.map(e => `
+    <div class="pending-card redeem" id="rcard-${e.entryId}">
+      <div class="pname">${e.name} — ${e.category}</div>
+      <div class="pdetail">${e.item} &nbsp;|&nbsp; ${e.cost} credit${e.cost>1?"s":""} &nbsp;|&nbsp;
+        <span class="badge badge-${e.status}">${statusLabel(e.status)}</span>
+        ${e.returnBy ? `<br>Needed until: ${e.returnBy}` : ""}
+      </div>
+      <div class="pcard-actions">
+        ${e.status === "approved" ? `<button class="btn-fulfill" onclick="handleRedeemAction('${e.entryId}','redeemFulfill')">📦 Mark Fulfilled</button>` : ""}
+        ${e.status === "fulfilled" && e.type === "Shared" ? `<button class="btn-return" onclick="handleRedeemReturn('${e.entryId}')">↩ Mark Returned</button>` : ""}
+      </div>
+    </div>`).join("") : `<div class="empty-note">Nothing awaiting fulfillment or return.</div>`;
+
+  // All activity
+  const tbody = document.getElementById("admin-redeem-tbody");
+  tbody.innerHTML = allRedeemEntries.length ? allRedeemEntries.slice().reverse().map(e => `
+    <tr>
+      <td>${fmtDate(e.date)}</td>
+      <td>${e.name}</td>
+      <td>${e.category}</td>
+      <td title="${e.item}">${truncate(e.item,30)}</td>
+      <td>${e.cost}</td>
+      <td><span class="badge badge-${e.status}">${statusLabel(e.status)}</span></td>
+    </tr>`).join("") : `<tr><td colspan="6" class="empty-note">No redeem activity yet.</td></tr>`;
+}
+async function handleRedeemAction(entryId, action) {
+  const card = document.getElementById("rcard-"+entryId);
+  if (card) { card.style.opacity="0.5"; card.querySelectorAll("button").forEach(b=>b.disabled=true); }
+  try {
+    await fetch(SCRIPT_URL, {
+      method:"POST", mode:"no-cors",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ action, program:getProgram(), entryId })
+    });
+  } catch(e) { console.error("Redeem action error:", e); }
+  loadAdminRedeem();
+}
+async function handleRedeemReturn(entryId) {
+  const condition = prompt("Condition on return? (e.g. Good, Fair, Damaged)", "Good");
+  if (condition === null) return;
+  try {
+    await fetch(SCRIPT_URL, {
+      method:"POST", mode:"no-cors",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ action:"redeemReturn", program:getProgram(), entryId, condition })
+    });
+  } catch(e) { console.error("Redeem return error:", e); }
+  loadAdminRedeem();
+}
+
+// ─── HELPERS ──────────────────────────────────────────────────
+function fmtDate(ts) {
+  if (!ts) return "—";
+  const d = new Date(ts);
+  return isNaN(d) ? ts : d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"2-digit"});
+}
+function truncate(str, n) { return str && str.length > n ? str.slice(0,n)+"…" : (str||""); }
+function statusLabel(s) {
+  return s==="approved"?"Approved":s==="denied"?"Denied":s==="pending"?"Pending":
+         s==="fulfilled"?"Fulfilled":s==="returned"?"Returned":"Approved";
+}
+</script>
+</body>
+</html>
