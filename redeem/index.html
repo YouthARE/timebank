@@ -188,11 +188,7 @@ tr:hover td { background: #f0fdf9; }
   <!-- GIVE & GET TAB -->
   <div id="tab-give-get">
     <div class="card">
-      <h3>Log Activity</h3>
-      <div class="type-toggle">
-        <button class="type-btn active" id="btn-work" onclick="setType('Work')">🛠 Log Work Hours</button>
-        <button class="type-btn" id="btn-request" onclick="setType('Request')">🎁 Request Item</button>
-      </div>
+      <h3>🛠 Log Work Hours</h3>
       <div class="form-group">
         <label>Your Name</label>
         <select id="member-name">
@@ -218,26 +214,6 @@ tr:hover td { background: #f0fdf9; }
         <div class="form-group">
           <label>Activity Description</label>
           <textarea id="work-detail" placeholder="What did you work on?"></textarea>
-        </div>
-      </div>
-      <div id="request-fields" style="display:none">
-        <div class="form-group">
-          <label>Item / Resource Requested</label>
-          <input type="text" id="request-item" placeholder="What are you requesting?" />
-        </div>
-        <div class="form-group">
-          <label>Hours to Spend</label>
-          <select id="hours-request">
-            <option value="1">1 hr</option>
-            <option value="2">2 hrs</option>
-            <option value="3">3 hrs</option>
-            <option value="4">4 hrs</option>
-            <option value="5">5 hrs</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Notes (optional)</label>
-          <textarea id="request-notes" placeholder="Any details about your request?"></textarea>
         </div>
       </div>
       <button class="submit-btn" onclick="submitEntry()">Submit</button>
@@ -285,14 +261,15 @@ tr:hover td { background: #f0fdf9; }
         <label>Category</label>
         <select id="redeem-category" onchange="onRedeemCategoryChange()">
           <option value="">— Select a category —</option>
-          <option value="Book">📚 Book</option>
-          <option value="Game">🎲 Game</option>
-          <option value="Sports Gear">⚽ Sports Gear</option>
-          <option value="Clothing">👕 Clothing</option>
-          <option value="Art & School Supplies">🎨 Art &amp; School Supplies</option>
-          <option value="Tool">🔧 Tool</option>
-          <option value="Shared Resource">🚲 Shared Resource (bike, monitor, machine — per day)</option>
-          <option value="Service">🤝 Service (tutoring, coaching, transportation, etc.)</option>
+          <option value="Service">🤝 Service — 1 credit (tutoring, coaching, transportation, etc.)</option>
+          <option value="Book">📚 Book — 2 credits</option>
+          <option value="Game">🎲 Game — 3 credits</option>
+          <option value="Sports Gear">⚽ Sports Gear — 4 credits</option>
+          <option value="Clothing">👕 Clothing — 4 credits</option>
+          <option value="Art & School Supplies">🎨 Art &amp; School Supplies — 5 credits</option>
+          <option value="Tool">🔧 Tool — 5 credits</option>
+          <option value="Shared Resource">🚲 Shared Resource — 5 credits/day (bike, monitor, machine)</option>
+          <option value="Other">❓ Other — cost set by a coordinator</option>
         </select>
       </div>
       <div class="cost-display" id="redeem-cost-display" style="display:none"></div>
@@ -377,13 +354,13 @@ const MEMBER_PIN = "1249";
 const ADMIN_PIN = "9128";
 
 const CATEGORY_COST = {
-  "Book": 2, "Game": 3, "Sports Gear": 4, "Clothing": 4,
-  "Art & School Supplies": 5, "Tool": 5, "Shared Resource": 5, "Service": 1
+  "Service": 1, "Book": 2, "Game": 3, "Sports Gear": 4, "Clothing": 4,
+  "Art & School Supplies": 5, "Tool": 5, "Shared Resource": 5, "Other": 0
 };
 const CATEGORY_TYPE = {
-  "Book": "Individual", "Game": "Individual", "Sports Gear": "Individual", "Clothing": "Individual",
-  "Art & School Supplies": "Individual", "Tool": "Individual",
-  "Shared Resource": "Shared", "Service": "Service"
+  "Service": "Service", "Book": "Individual", "Game": "Individual", "Sports Gear": "Individual",
+  "Clothing": "Individual", "Art & School Supplies": "Individual", "Tool": "Individual",
+  "Shared Resource": "Shared", "Other": "Individual"
 };
 
 let isAdmin = false;
@@ -515,30 +492,19 @@ async function submitEntry() {
   const msg = document.getElementById("submit-msg");
   if (!name) { msg.textContent = "Please select your name."; msg.style.color="var(--red)"; return; }
 
-  let detail, hours;
-  if (entryType === "Work") {
-    detail = document.getElementById("work-detail").value.trim();
-    hours = parseFloat(document.getElementById("hours-worked").value);
-    if (!detail) { msg.textContent = "Please describe the activity."; msg.style.color="var(--red)"; return; }
-  } else {
-    const item = document.getElementById("request-item").value.trim();
-    const notes = document.getElementById("request-notes").value.trim();
-    hours = -parseFloat(document.getElementById("hours-request").value);
-    detail = item + (notes ? ` — ${notes}` : "");
-    if (!item) { msg.textContent = "Please enter what you're requesting."; msg.style.color="var(--red)"; return; }
-  }
+  const detail = document.getElementById("work-detail").value.trim();
+  const hours = parseFloat(document.getElementById("hours-worked").value);
+  if (!detail) { msg.textContent = "Please describe the activity."; msg.style.color="var(--red)"; return; }
 
   msg.textContent = "Submitting…"; msg.style.color = "var(--teal)";
   try {
     await fetch(SCRIPT_URL, {
       method:"POST", mode:"no-cors",
       headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({ action:"submit", program:getProgram(), name, type:entryType, detail, hours })
+      body: JSON.stringify({ action:"submit", program:getProgram(), name, type:"Work", detail, hours })
     });
     msg.textContent = "✓ Submitted successfully!"; msg.style.color="var(--teal)";
     document.getElementById("work-detail").value = "";
-    document.getElementById("request-item").value = "";
-    document.getElementById("request-notes").value = "";
   } catch(e) {
     msg.textContent = "Error submitting. Please try again."; msg.style.color="var(--red)";
   }
@@ -569,15 +535,21 @@ function onRedeemCategoryChange() {
   const cost = CATEGORY_COST[cat];
   const type = CATEGORY_TYPE[cat];
   costDisplay.style.display = "block";
-  costDisplay.textContent = type === "Shared"
-    ? `${cost} credits per day`
-    : `${cost} credit${cost>1?"s":""}`;
+  if (cat === "Other") {
+    costDisplay.textContent = "Cost: to be set by a coordinator";
+  } else {
+    costDisplay.textContent = type === "Shared"
+      ? `${cost} credits per day`
+      : `${cost} credit${cost>1?"s":""}`;
+  }
 
   itemGroup.style.display = "block";
-  itemLabel.textContent = type === "Service" ? "What service do you need?" : "What are you requesting?";
-  document.getElementById("redeem-item").placeholder = type === "Service"
-    ? "e.g. 'help with algebra homework'"
-    : "Be specific — e.g. 'used soccer cleats, size 6'";
+  itemLabel.textContent = cat === "Other" ? "What do you need?" : (type === "Service" ? "What service do you need?" : "What are you requesting?");
+  document.getElementById("redeem-item").placeholder = cat === "Other"
+    ? "Describe what you need — we'll figure out how to help"
+    : (type === "Service"
+      ? "e.g. 'help with algebra homework'"
+      : "Be specific — e.g. 'used soccer cleats, size 6'");
 
   returnByGroup.style.display = (type === "Shared") ? "block" : "none";
   scheduledGroup.style.display = (type === "Service") ? "block" : "none";
@@ -637,7 +609,7 @@ async function loadMyRedeemRequests(name) {
     list.innerHTML = mine.length ? mine.map(e => `
       <div class="pending-card redeem">
         <div class="pname">${e.category} — ${e.item}</div>
-        <div class="pdetail">${e.cost} credit${e.cost>1?"s":""} &nbsp;|&nbsp; ${fmtDate(e.date)} &nbsp;|&nbsp;
+        <div class="pdetail">${e.category==="Other" && e.status==="pending" ? "cost TBD" : `${e.cost} credit${e.cost>1?"s":""}`} &nbsp;|&nbsp; ${fmtDate(e.date)} &nbsp;|&nbsp;
           <span class="badge badge-${e.status}">${statusLabel(e.status)}</span>
         </div>
       </div>`).join("") : `<div class="empty-note">No redeem requests yet.</div>`;
@@ -830,14 +802,14 @@ function renderAdminRedeem() {
   pdiv.innerHTML = pending.length ? pending.map(e => `
     <div class="pending-card redeem" id="rcard-${e.entryId}">
       <div class="pname">${e.name} — ${e.category}</div>
-      <div class="pdetail">${e.item} &nbsp;|&nbsp; ${e.cost} credit${e.cost>1?"s":""} &nbsp;|&nbsp; ${fmtDate(e.date)}
+      <div class="pdetail">${e.item} &nbsp;|&nbsp; ${e.category==="Other" ? "cost TBD" : `${e.cost} credit${e.cost>1?"s":""}`} &nbsp;|&nbsp; ${fmtDate(e.date)}
         ${e.returnBy ? `<br>Needed until: ${e.returnBy}` : ""}
         ${e.scheduledDate ? `<br>Preferred: ${e.scheduledDate}` : ""}
         ${e.notes ? `<br>Notes: ${e.notes}` : ""}
       </div>
       <div class="pcard-actions">
-        <button class="btn-approve" onclick="handleRedeemAction('${e.entryId}','redeemApprove')">✓ Approve</button>
-        <button class="btn-deny" onclick="handleRedeemAction('${e.entryId}','redeemDeny')">✗ Deny</button>
+        <button class="btn-approve" onclick="handleRedeemAction('${e.entryId}','redeemApprove','${e.category}')">✓ Approve</button>
+        <button class="btn-deny" onclick="handleRedeemAction('${e.entryId}','redeemDeny','${e.category}')">✗ Deny</button>
       </div>
     </div>`).join("") : `<div class="empty-note">No pending redeem requests.</div>`;
 
@@ -871,14 +843,22 @@ function renderAdminRedeem() {
       <td><span class="badge badge-${e.status}">${statusLabel(e.status)}</span></td>
     </tr>`).join("") : `<tr><td colspan="6" class="empty-note">No redeem activity yet.</td></tr>`;
 }
-async function handleRedeemAction(entryId, action) {
+async function handleRedeemAction(entryId, action, category) {
+  let cost;
+  if (action === "redeemApprove" && category === "Other") {
+    const entered = prompt("This is an 'Other' request with no fixed cost. How many credits should it cost?", "1");
+    if (entered === null) return; // coordinator cancelled
+    cost = parseFloat(entered) || 0;
+  }
   const card = document.getElementById("rcard-"+entryId);
   if (card) { card.style.opacity="0.5"; card.querySelectorAll("button").forEach(b=>b.disabled=true); }
   try {
+    const body = { action, program:getProgram(), entryId };
+    if (cost !== undefined) body.cost = cost;
     await fetch(SCRIPT_URL, {
       method:"POST", mode:"no-cors",
       headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({ action, program:getProgram(), entryId })
+      body: JSON.stringify(body)
     });
   } catch(e) { console.error("Redeem action error:", e); }
   loadAdminRedeem();
